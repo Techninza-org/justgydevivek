@@ -2,6 +2,7 @@ const User=require('../model/user');
 const Address=require('../model/address');
 const Service=require('../model/service');
 const Vendor=require('../model/vendor');
+const Rating=require('../model/rating');
 const Bookedservice=require('../model/bookedservice');
 const bcrypt = require('bcrypt');
 
@@ -177,6 +178,24 @@ exports.getbycatergory=async(req,res)=>{
         const {catergory}=req.body;
         const listofservices=await Service.find({catergory:catergory});
         return res.status(200).send({listofservices, status: 200});
+    } catch (error) {
+        console.log(error);
+        return res.status(500).send({message:"error occured in try block please check cosole to see error", status: 500});
+    }
+};
+
+//provide rating to vendor
+exports.provideRating=async(req,res)=>{
+    try {
+        const currentuseremail=req.email;
+        const userbyuseremail=await User.findOne({email:currentuseremail});
+        const userid=userbyuseremail._id
+        const {rating , vendoremail}=req.body;
+        const vendorbyvendoremail=await Vendor.findOne({email:vendoremail});
+        const vendorid=vendorbyvendoremail._id;
+        const newrating=new Rating({rating:rating, vendorid:vendorid, userid:userid});
+        await newrating.save();
+        return res.status(200).send({newrating, status: 200});
     } catch (error) {
         console.log(error);
         return res.status(500).send({message:"error occured in try block please check cosole to see error", status: 500});

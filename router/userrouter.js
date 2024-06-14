@@ -1,6 +1,6 @@
 const router = require('express').Router();
 
-const {getAll,updateuser,deleteuser,getallservices, bookservice, myorders, setname, userhome, addaddress, getbycatergory} = require('../contoller/usercontroller');
+const {getAll,updateuser,deleteuser,getallservices, bookservice, myorders, setname, userhome, addaddress, getbycatergory, provideRating} = require('../contoller/usercontroller');
 
 router.get('/getalldetails',getAll);
 router.patch('/updatePassword',updateuser);
@@ -12,5 +12,6 @@ router.patch('/setname',setname);
 router.get('/home',userhome);
 router.post('/addaddress',addaddress);
 router.post('/getbycatergory',getbycatergory);
+router.post('/provideRating',provideRating);
 
 module.exports=router;

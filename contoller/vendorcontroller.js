@@ -1,6 +1,7 @@
 const Vendor=require('../model/vendor');
 const Address=require('../model/address');
 const Service=require('../model/service');
+const Rating=require('../model/rating');
 const Bookedservice=require('../model/bookedservice');
 const crypto = require('node:crypto');
 const bcrypt = require('bcrypt');
@@ -166,6 +167,21 @@ exports.totalorders=async(req,res)=>{
         console.log(vendorid);
         const listofallordersbyvendorid=await Bookedservice.find({vendorid:vendorid, servicestatus:"accepted"});
         return res.status(200).send({listofallordersbyvendorid, status: 200});
+    }
+    catch (error) {
+        console.log(error);
+        return res.status(500).send({message:"error occured in try block please check cosole to see error", status: 500});
+    }
+}
+
+//get all ratings of vendor
+exports.getallratings=async(req,res)=>{
+    try {
+        const currentemail=req.email;
+        const currentvendor=await Vendor.findOne({email:currentemail});
+        const vendorid=currentvendor._id;
+        const listofallratings=await Rating.find({vendorid:vendorid});
+        return res.status(200).send({listofallratings, status: 200});
     }
     catch (error) {
         console.log(error);
