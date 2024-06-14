@@ -26,13 +26,13 @@ exports.signup = async (req, res) => {
         bcrypt.hash(password, SALT_ROUNDS, async (err, hashedPassword) => {
             if (err) {
                 console.log(err);
-                return res.status(500).send({ message: "Unable to create user" });
+                return res.status(401).send({ message: "Unable to create user" });
             }
             const user = new User({ name, mobile, email, password: hashedPassword });
             await user.save();
             delete user.password;
             const token = jwt.sign({ email: user.email, role: user.role }, SECRET_KEY, { expiresIn: "7d" });
-            return res.status(200).send({user: user, token: token});
+            return res.status(200).send({user: user, token: token, status: 200});
         });
     } catch (error) {
         console.log(error);
@@ -60,14 +60,14 @@ exports.vendorsignup = async (req, res) => {
         bcrypt.hash(password, SALT_ROUNDS, async (err, hashedPassword) => {
             if (err) {
                 console.log(err);
-                return res.status(500).send({ message: "Unable to create user" });
+                return res.status(401).send({ message: "Unable to create user" });
             }
             const user = new Vendor({ name, mobile, email, password: hashedPassword });
             await user.save();
             // user.password = undefined; // Remove password from response
             delete user.password;
             const token = jwt.sign({ email: user.email, role: user.role }, SECRET_KEY, { expiresIn: "7d" });
-            return res.status(200).send({user: user, token: token});
+            return res.status(200).send({user: user, token: token, status: 200});
         });
     } catch (error) {
         console.log(error);
@@ -82,18 +82,18 @@ exports.login = async (req, res) => {
         const user = await User.findOne({ email });
 
         if (!user) {
-            return res.status(200).send({ message: "Invalid credentials" });
+            return res.status(401).send({ message: "Invalid credentials" });
         }
 
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
-            return res.status(200).send({ message: "Invalid credentials" });
+            return res.status(401).send({ message: "Invalid credentials" });
         }
 
         user.password = undefined; // Remove password from response
         const token = jwt.sign({ email: user.email, role: user.role }, SECRET_KEY, { expiresIn: "7d" });
 
-        return res.status(200).send({ user, token });
+        return res.status(200).send({ user, token, status: 200 });
     } catch (err) {
         console.log(err);
         res.status(500).send({ message: "Internal server error" });
@@ -107,18 +107,18 @@ exports.vendorlogin = async (req, res) => {
         const user = await Vendor.findOne({ email });
 
         if (!user) {
-            return res.status(200).send({ message: "Invalid credentials" });
+            return res.status(401).send({ message: "Invalid credentials" });
         }
 
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
-            return res.status(200).send({ message: "Invalid credentials" });
+            return res.status(401).send({ message: "Invalid credentials" });
         }
 
         user.password = undefined; // Remove password from response
         const token = jwt.sign({ email: user.email, role: user.role }, SECRET_KEY, { expiresIn: "7d" });
 
-        return res.status(200).send({ user, token });
+        return res.status(200).send({ user, token, status: 200});
     } catch (err) {
         console.log(err);
         res.status(500).send({ message: "Internal server error" });
