@@ -6,6 +6,7 @@ const auth=require('./router/authrouter');
 const vendor=require('./router/vendorrouter');
 const user=require('./router/userrouter');
 const {middleware}=require('./middleware/middleware');
+const { verify } = require('jsonwebtoken');
 
 
 //importing express into 'app' for getting '.use()' function
@@ -18,7 +19,7 @@ app.use(bodyParser.json());
 //parent routers
 app.use('/auth',auth);
 app.use(middleware);
-app.use('/vendor',vendor);
+app.use('/vendor', vendor);
 app.use('/user',user);
 
 //mongoDb Connected

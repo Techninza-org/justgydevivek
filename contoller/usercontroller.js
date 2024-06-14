@@ -85,14 +85,15 @@ exports.bookservice=async(req,res)=>{
     try {
         const currentuseremail=req.email;
         const serv=req.body;
-
+        
         //get vendor by vendoremail (it is available in service model).
         const vendorbyvendoremail=await Vendor.findOne({email:serv.vendoremail});
         const userbyuseremail=await User.findOne({email:currentuseremail});
         const serviceid=serv._id;
         const vendorid=vendorbyvendoremail._id;
+        console.log(userbyuseremail);
         const userid=userbyuseremail._id;
-
+        
         const newbookeservice=new Bookedservice({serviceid,userid,vendorid});
         console.log(serv._id);
         console.log(serv.vendoremail);
@@ -105,7 +106,7 @@ exports.bookservice=async(req,res)=>{
 };
 
 //all booked services by user
-exports.myorders=async(req,res)=>{
+exports.myorders= async (req,res)=>{
     try {
         const currentuseremail=req.email;
         const userbyuseremail=await User.findOne({email:currentuseremail});
@@ -167,11 +168,14 @@ exports.addaddress=async(req,res)=>{
     }
 };
 
-// //get by catergory
-// exports.getbycatergory=async(req,res)=>{
-//     try {
-//         const {catergory}=req.body;
-//     } catch (error) {
-        
-//     }
-// };
+//get by catergory
+exports.getbycatergory=async(req,res)=>{
+    try {
+        const {catergory}=req.body;
+        const listofservices=await Service.find({catergory:catergory});
+        return res.status(200).send({listofservices, status: 200});
+    } catch (error) {
+        console.log(error);
+        return res.status(500).send({message:"error occured in try block please check cosole to see error", status: 500});
+    }
+};

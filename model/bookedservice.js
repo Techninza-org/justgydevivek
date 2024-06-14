@@ -10,6 +10,12 @@ const bookedserviceschema=new mongoose.Schema({
     },
     vendorid:{
         type: String
+    },
+    quantity:{
+        type: Number
+    },
+    paidvia:{
+        type: String
     }
 });
 
