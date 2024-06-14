@@ -32,7 +32,7 @@ exports.signup = async (req, res) => {
             await user.save();
             delete user.password;
             const token = jwt.sign({ email: user.email, role: user.role }, SECRET_KEY, { expiresIn: "7d" });
-            res.status(200).send({user: user, token: token});
+            return res.status(200).send({user: user, token: token});
         });
     } catch (error) {
         console.log(error);
@@ -67,7 +67,7 @@ exports.vendorsignup = async (req, res) => {
             // user.password = undefined; // Remove password from response
             delete user.password;
             const token = jwt.sign({ email: user.email, role: user.role }, SECRET_KEY, { expiresIn: "7d" });
-            res.status(200).send({user: user, token: token});
+            return res.status(200).send({user: user, token: token});
         });
     } catch (error) {
         console.log(error);

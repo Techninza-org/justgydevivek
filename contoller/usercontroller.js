@@ -12,27 +12,27 @@ exports.getAll=async (req,res)=>{
     try {
         const email=req.email;
         const currentuserdetails=await User.findOne({email:email});
-        if(currentvendordetails){
-            res.status(200).send(currentuserdetails);
+        if(currentuserdetails){
+            return res.status(200).send(currentuserdetails);
         }else{
-            res.status(404).send({message:"vendor not found"});
+            return res.status(404).send({message:"vendor not found"});
         }
     } catch (error) {
         console.log(error);
-        res.status(500).send({message:"error occured in try block please check cosole to see error"});
+        return res.status(500).send({message:"error occured in try block please check cosole to see error"});
     }
 }
 
-//delete current vendor
+//delete current user
 
 exports.deleteuser=async (req,res)=>{
     try {
         const currentvendoremail=req.email;
         await User.deleteOne({email:currentvendoremail});
-        res.status(200).send({message:"deleted successfully"});
+        return res.status(200).send({message:"deleted successfully"});
     } catch (error) {
         console.log(error);
-        res.status(500).send({message: "inside catch user not deleted"});
+        return res.status(500).send({message: "inside catch user not deleted"});
     }
 }
 
@@ -59,12 +59,12 @@ exports.updateuser=async(req,res)=>{
             await user.save();
             user.password = undefined; // Remove password from response
 
-            res.status(200).send({ message: "Vendor updated successfully", user });
+            return res.status(200).send({ message: "Vendor updated successfully", user });
         });
 
     } catch (error) {
         console.log(error);
-        res.status(500).send({message:"error occured in try block please check cosole to see error"});
+        return res.status(500).send({message:"error occured in try block please check cosole to see error"});
     }
 };
 
@@ -73,10 +73,10 @@ exports.getallservices=async(req,res)=>{
     try {
         const {catergory}=req.body;
         const listOfServices=await Service.find({catergory: catergory});
-        res.status(200).send(listOfServices);
+        return res.status(200).send(listOfServices);
     } catch (error) {
         console.log(error);
-        res.status(500).send({message:"error occured in try block please check cosole to see error"});
+        return res.status(500).send({message:"error occured in try block please check cosole to see error"});
     }
 };
 
@@ -97,10 +97,10 @@ exports.bookservice=async(req,res)=>{
         console.log(serv._id);
         console.log(serv.vendoremail);
         await newbookeservice.save();
-        res.status(200).send(newbookeservice);
+        return res.status(200).send(newbookeservice);
     } catch (error) {
         console.log(error);
-        res.status(500).send({message:"error occured in try block please check cosole to see error"});
+        return res.status(500).send({message:"error occured in try block please check cosole to see error"});
     }
 };
 
@@ -111,10 +111,10 @@ exports.myorders=async(req,res)=>{
         const userbyuseremail=await User.findOne({email:currentuseremail});
         const userid=userbyuseremail._id;
         const listofallordersbyuserid=await Bookedservice.find({userid:userid});
-        res.status(200).send(listofallordersbyuserid);
+        return res.status(200).send(listofallordersbyuserid);
     } catch (error) {
         console.log(error);
-        res.status(500).send({message:"error occured in try block please check cosole to see error"});
+        return res.status(500).send({message:"error occured in try block please check cosole to see error"});
     }
 };
 
@@ -129,10 +129,10 @@ exports.setname=async(req,res)=>{
         const userbyuseremail=await User.findOne({email:currentuseremail});
         userbyuseremail.name=name;
         await userbyuseremail.save();
-        res.status(200).send(userbyuseremail);
+        return res.status(200).send(userbyuseremail);
     } catch (error) {
         console.log(error);
-        res.status(500).send({message:"error occured in try block please check cosole to see error"});
+        return res.status(500).send({message:"error occured in try block please check cosole to see error"});
     }
 };
 
@@ -143,10 +143,10 @@ exports.userhome=async(req,res)=>{
         const userbyuseremail=await User.findOne({email:currentuseremail});
         const userid=userbyuseremail._id;
         const addressbyuserid=await Address.find({userid:userid});
-        res.status(200).send({userbyuseremail, addressbyuserid});
+        return res.status(200).send({userbyuseremail, addressbyuserid});
     } catch (error) {
         console.log(error);
-        res.status(500).send({message:"error occured in try block please check cosole to see error"});
+        return res.status(500).send({message:"error occured in try block please check cosole to see error"});
     }
 };
 
@@ -160,9 +160,9 @@ exports.addaddress=async(req,res)=>{
         const newaddress=new Address({userid:userid, houseno:address.houseno, lineone:address.lineone, linetwo:address.linetwo, linethree:address.linethree, landmark:address.landmark, pincode:address.pincode});
         const addressbyuserid=await Address.find({userid:userid});
         await newaddress.save();
-        res.status(200).send({newaddress, addressbyuserid});
+        return res.status(200).send({newaddress, addressbyuserid});
     } catch (error) {
         console.log(error);
-        res.status(500).send({message:"error occured in try block please check cosole to see error"});
+        return res.status(500).send({message:"error occured in try block please check cosole to see error"});
     }
 };

@@ -15,10 +15,10 @@ exports.addservicebyvendor=async(req,res)=>{
         const newservice=new Service({servicename, catergory, servicedescription, price, image, address});
         newservice.vendoremail=vendoremail;
         await newservice.save();
-        res.status(200).send(newservice);
+        return res.status(200).send(newservice);
     } catch (error) {
         console.log(error);
-        res.status(500).send({message:"error occured in try block please check cosole to see error"});
+        return res.status(500).send({message:"error occured in try block please check cosole to see error"});
     }
 };
 
@@ -27,10 +27,10 @@ exports.allservices=async(req,res)=>{
     try {
         const vendoremail=req.email;
         const listofservices=await Service.find({vendoremail:vendoremail});
-        res.status(200).send(listofservices);
+        return res.status(200).send(listofservices);
     } catch (error) {
         console.log(error);
-        res.status(500).send({message:"error occured in try block please check cosole to see error"})
+        return res.status(500).send({message:"error occured in try block please check cosole to see error"})
     }
 };
 
@@ -57,12 +57,12 @@ exports.updatevendor=async(req,res)=>{
             await vendor.save();
             vendor.password = undefined; // Remove password from response
 
-            res.status(200).send({ message: "Vendor updated successfully", vendor });
+            return res.status(200).send({ message: "Vendor updated successfully", vendor });
         });
 
     } catch (error) {
         console.log(error);
-        res.status(500).send({message:"error occured in try block please check cosole to see error"});
+        return res.status(500).send({message:"error occured in try block please check cosole to see error"});
     }
 };
 
@@ -72,13 +72,13 @@ exports.getAll=async (req,res)=>{
         const email=req.email;
         const currentvendordetails=await Vendor.findOne({email:email});
         if(currentvendordetails){
-            res.status(200).send(currentvendordetails);
+            return res.status(200).send(currentvendordetails);
         }else{
-            res.status(404).send({message:"vendor not found"});
+            return res.status(404).send({message:"vendor not found"});
         }
     } catch (error) {
         console.log(error);
-        res.status(500).send({message:"error occured in try block please check cosole to see error"});
+        return res.status(500).send({message:"error occured in try block please check cosole to see error"});
     }
 }
 
@@ -88,10 +88,10 @@ exports.deletevendor=async (req,res)=>{
     try {
         const currentvendoremail=req.email;
         await Vendor.deleteOne({email:currentvendoremail});
-        res.status(200).send({message:"deleted successfully"});
+        return res.status(200).send({message:"deleted successfully"});
     } catch (error) {
         console.log(error);
-        res.status(500).send({message: "inside catch user not deleted"});
+        return res.status(500).send({message: "inside catch user not deleted"});
     }
 }
 
