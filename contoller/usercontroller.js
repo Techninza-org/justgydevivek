@@ -90,14 +90,16 @@ exports.bookservice=async(req,res)=>{
         //get vendor by vendoremail (it is available in service model).
         const vendorbyvendoremail=await Vendor.findOne({email:serv.vendoremail});
         const userbyuseremail=await User.findOne({email:currentuseremail});
+        console.log("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+        console.log(userbyuseremail);
         const serviceid=serv._id;
         const vendorid=vendorbyvendoremail._id;
-        console.log(userbyuseremail);
         const userid=userbyuseremail._id;
         
         const newbookeservice=new Bookedservice({serviceid,userid,vendorid});
         console.log(serv._id);
         console.log(serv.vendoremail);
+        newbookeservice.servicestatus="payment is done waiting for vendor to accept the service";
         await newbookeservice.save();
         return res.status(200).send({newbookeservice, status: 200});
     } catch (error) {

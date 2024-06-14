@@ -16,6 +16,9 @@ const bookedserviceschema=new mongoose.Schema({
     },
     paidvia:{
         type: String
+    },
+    servicestatus:{
+        type: String
     }
 });
 
