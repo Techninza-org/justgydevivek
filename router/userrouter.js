@@ -3,7 +3,7 @@ const router = require('express').Router();
 const {getAll,updateuser,deleteuser,getallservices, bookservice, myorders, setname, userhome, addaddress, getbycatergory} = require('../contoller/usercontroller');
 
 router.get('/getalldetails',getAll);
-router.patch('/update',updateuser);
+router.patch('/updatePassword',updateuser);
 router.delete('/delete',deleteuser);
 router.post('/getallservices',getallservices);
 router.post('/bookservice',bookservice);

@@ -36,12 +36,16 @@ exports.deleteuser=async (req,res)=>{
     }
 }
 
-// update user
+// update user name and password
 exports.updateuser=async(req,res)=>{
     try {
-        const {name,password}=req.body;
+        const {password}=req.body;
         const currentuseremail=req.email;
         const user=await User.findOne({email:currentuseremail});
+
+        if (!password) {
+            return res.status(400).send({message:"password variable is null", status: 400});
+        }
 
         bcrypt.hash(password, SALT_ROUND, async (err, hashedPassword) => {
             if (err) {
@@ -51,9 +55,6 @@ exports.updateuser=async(req,res)=>{
 
             // Update the user's password and name if provided
             user.password = hashedPassword;
-            if (name) {
-                user.name = name;
-            }
 
             // Save the updated user
             await user.save();
