@@ -30,8 +30,9 @@ exports.signup = async (req, res) => {
             }
             const user = new User({ name, mobile, email, password: hashedPassword });
             await user.save();
-            user.password = undefined; // Remove password from response
-            res.status(200).send(user);
+            delete user.password;
+            const token = jwt.sign({ email: user.email, role: user.role }, SECRET_KEY, { expiresIn: "7d" });
+            res.status(200).send({user: user, token: token});
         });
     } catch (error) {
         console.log(error);
@@ -63,8 +64,10 @@ exports.vendorsignup = async (req, res) => {
             }
             const user = new Vendor({ name, mobile, email, password: hashedPassword });
             await user.save();
-            user.password = undefined; // Remove password from response
-            res.status(200).send(user);
+            // user.password = undefined; // Remove password from response
+            delete user.password;
+            const token = jwt.sign({ email: user.email, role: user.role }, SECRET_KEY, { expiresIn: "7d" });
+            res.status(200).send({user: user, token: token});
         });
     } catch (error) {
         console.log(error);

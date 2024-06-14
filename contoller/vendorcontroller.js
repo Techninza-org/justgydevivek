@@ -10,9 +10,9 @@ const SALT_ROUND=10;
 exports.addservicebyvendor=async(req,res)=>{
     try {
         const vendoremail=req.email;
-        const {servicename, category, servicedescription, price, image, address}=req.body;
+        const {servicename, catergory, servicedescription, price, image, address}=req.body;
         console.log(req);
-        const newservice=new Service({servicename, category, servicedescription, price, image, address});
+        const newservice=new Service({servicename, catergory, servicedescription, price, image, address});
         newservice.vendoremail=vendoremail;
         await newservice.save();
         res.status(200).send(newservice);
@@ -94,3 +94,5 @@ exports.deletevendor=async (req,res)=>{
         res.status(500).send({message: "inside catch user not deleted"});
     }
 }
+
+

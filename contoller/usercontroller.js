@@ -1,6 +1,8 @@
 const User=require('../model/user');
 const Address=require('../model/address');
 const Service=require('../model/service');
+const Vendor=require('../model/vendor');
+const Bookedservice=require('../model/bookedservice');
 const bcrypt = require('bcrypt');
 
 const SALT_ROUND=10;
@@ -60,6 +62,105 @@ exports.updateuser=async(req,res)=>{
             res.status(200).send({ message: "Vendor updated successfully", user });
         });
 
+    } catch (error) {
+        console.log(error);
+        res.status(500).send({message:"error occured in try block please check cosole to see error"});
+    }
+};
+
+//get all offered services of vendor
+exports.getallservices=async(req,res)=>{
+    try {
+        const {catergory}=req.body;
+        const listOfServices=await Service.find({catergory: catergory});
+        res.status(200).send(listOfServices);
+    } catch (error) {
+        console.log(error);
+        res.status(500).send({message:"error occured in try block please check cosole to see error"});
+    }
+};
+
+//book service by user
+exports.bookservice=async(req,res)=>{
+    try {
+        const currentuseremail=req.email;
+        const serv=req.body;
+
+        //get vendor by vendoremail (it is available in service model).
+        const vendorbyvendoremail=await Vendor.findOne({email:serv.vendoremail});
+        const userbyuseremail=await User.findOne({email:currentuseremail});
+        const serviceid=serv._id;
+        const vendorid=vendorbyvendoremail._id;
+        const userid=userbyuseremail._id;
+
+        const newbookeservice=new Bookedservice({serviceid,userid,vendorid});
+        console.log(serv._id);
+        console.log(serv.vendoremail);
+        await newbookeservice.save();
+        res.status(200).send(newbookeservice);
+    } catch (error) {
+        console.log(error);
+        res.status(500).send({message:"error occured in try block please check cosole to see error"});
+    }
+};
+
+//all booked services by user
+exports.myorders=async(req,res)=>{
+    try {
+        const currentuseremail=req.email;
+        const userbyuseremail=await User.findOne({email:currentuseremail});
+        const userid=userbyuseremail._id;
+        const listofallordersbyuserid=await Bookedservice.find({userid:userid});
+        res.status(200).send(listofallordersbyuserid);
+    } catch (error) {
+        console.log(error);
+        res.status(500).send({message:"error occured in try block please check cosole to see error"});
+    }
+};
+
+//update user's name
+exports.setname=async(req,res)=>{
+    try {
+        currentuseremail=req.email;
+        const {name}=req.body;
+        if (!name) {
+            return res.status(400).send({message:"name variable is null"});
+        }
+        const userbyuseremail=await User.findOne({email:currentuseremail});
+        userbyuseremail.name=name;
+        await userbyuseremail.save();
+        res.status(200).send(userbyuseremail);
+    } catch (error) {
+        console.log(error);
+        res.status(500).send({message:"error occured in try block please check cosole to see error"});
+    }
+};
+
+//user home
+exports.userhome=async(req,res)=>{
+    try {
+        const currentuseremail=req.email;
+        const userbyuseremail=await User.findOne({email:currentuseremail});
+        const userid=userbyuseremail._id;
+        const addressbyuserid=await Address.find({userid:userid});
+        res.status(200).send({userbyuseremail, addressbyuserid});
+    } catch (error) {
+        console.log(error);
+        res.status(500).send({message:"error occured in try block please check cosole to see error"});
+    }
+};
+
+//add address
+exports.addaddress=async(req,res)=>{
+    try {
+        const currentuseremail=req.email;
+        const userbyuseremail=await User.findOne({email:currentuseremail});
+        const userid=userbyuseremail._id;
+        const address=req.body;
+        const newaddress=new Address({userid:userid, houseno:address.houseno, lineone:address.lineone, linetwo:address.linetwo, linethree:address.linethree, landmark:address.landmark, pincode:address.pincode});
+        const addressbyuserid=await Address.find({userid:userid});
+        await newaddress.save();
+        res.status(200).send({newaddress, addressbyuserid});
     } catch (error) {
         console.log(error);
         res.status(500).send({message:"error occured in try block please check cosole to see error"});
