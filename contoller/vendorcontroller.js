@@ -29,7 +29,7 @@ const storage = multer.diskStorage({
 
 
 //add service by vender
-exports.addservicebyvendor= async(req,res)=>{
+exports.addservicebyvendor=[upload.array('images', 10), async(req,res)=>{
     try {
         const vendoremail=req.email;
         const {servicename, catergory, servicedescription, price, address}=req.body;
@@ -49,7 +49,7 @@ exports.addservicebyvendor= async(req,res)=>{
         console.log(error);
         return res.status(500).send({message:"error occured in try block please check cosole to see error", status: 500});
     }
-};
+}];
 
 //get all service of vendor
 exports.allservices=async(req,res)=>{
