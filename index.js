@@ -16,7 +16,6 @@ const app = express();
 //MiddleWare
 app.use(bodyParser.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-// app.use('/services', serviceRouter);
 
 
 //parent routers
