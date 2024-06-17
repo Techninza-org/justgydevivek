@@ -19,6 +19,9 @@ const bookedserviceschema=new mongoose.Schema({
     },
     servicestatus:{
         type: String
+    },
+    date:{
+        type: Date
     }
 });
 

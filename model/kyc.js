@@ -22,9 +22,9 @@ const kycschema=new mongoose.Schema({
     alternateemail:{
         type: String
     },
-    document:{
-        type: String,
-    },
+    document:[{
+        path: String,
+    }],
     status:{
         type: String,
         emums: ['pending', 'completed','rejected']
@@ -33,4 +33,7 @@ const kycschema=new mongoose.Schema({
         type: Boolean,
         default: false
     }
-})
+});
+
+const Kyc=mongoose.model('Kyc',kycschema);
+module.exports=Kyc;

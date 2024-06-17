@@ -15,9 +15,9 @@ const serviceschema=new mongoose.Schema({
     price:{
         type: Number
     },
-    image:{
-        type: String
-    },
+    image:[{
+        path: String
+    }],
     vendoremail:{
         type: String
     },

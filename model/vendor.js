@@ -19,6 +19,12 @@ const vendorschema=new mongoose.Schema({
     role:{
         type: String,
         default: 'Vendor'
+    },
+    image:{
+        path: String
+    },
+    vendorcreationdate:{
+        type: Date
     }
 });
 

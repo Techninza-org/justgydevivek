@@ -5,6 +5,7 @@ const bodyParser = require('body-parser');
 const auth=require('./router/authrouter');
 const vendor=require('./router/vendorrouter');
 const user=require('./router/userrouter');
+const path = require('path');
 const {middleware}=require('./middleware/middleware');
 const { verify } = require('jsonwebtoken');
 
@@ -14,6 +15,8 @@ const app = express();
 
 //MiddleWare
 app.use(bodyParser.json());
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// app.use('/services', serviceRouter);
 
 
 //parent routers

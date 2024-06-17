@@ -2,19 +2,44 @@ const Vendor=require('../model/vendor');
 const Address=require('../model/address');
 const Service=require('../model/service');
 const Rating=require('../model/rating');
+const kyc=require('../model/kyc');
 const Bookedservice=require('../model/bookedservice');
 const crypto = require('node:crypto');
 const bcrypt = require('bcrypt');
+const path = require('path');
+const multer = require('multer');
 
 const SALT_ROUND=10;
 
+// Configure multer to store files on disk
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+      cb(null, 'uploads/');
+    },
+    filename: (req, file, cb) => {
+      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+      cb(null, uniqueSuffix + path.extname(file.originalname));
+    }
+  });
+  
+  const upload = multer({ storage: storage });
+
+
+
 //add service by vender
-exports.addservicebyvendor=async(req,res)=>{
+exports.addservicebyvendor=[upload.array('images', 10), async(req,res)=>{
     try {
         const vendoremail=req.email;
-        const {servicename, catergory, servicedescription, price, image, address}=req.body;
-        console.log(req);
-        const newservice=new Service({servicename, catergory, servicedescription, price, image, address});
+        const {servicename, catergory, servicedescription, price, address}=req.body;
+
+        if(!catergory){
+            return res.status(400).send({message:"catergory is required", status: 400});
+        }
+
+        const images = req.files?.map((file) => ({ path: file.path }));
+        console.log(images);
+
+        const newservice=new Service({servicename, catergory, servicedescription, price, image: images, address});
         newservice.vendoremail=vendoremail;
         await newservice.save();
         return res.status(200).send({newservice, status: 200});
@@ -22,7 +47,7 @@ exports.addservicebyvendor=async(req,res)=>{
         console.log(error);
         return res.status(500).send({message:"error occured in try block please check cosole to see error", status: 500});
     }
-};
+}];
 
 //get all service of vendor
 exports.allservices=async(req,res)=>{
@@ -36,7 +61,7 @@ exports.allservices=async(req,res)=>{
     }
 };
 
-// update vendor
+// update vendor name and password
 exports.updatevendor=async(req,res)=>{
     try {
         const {name,password}=req.body;
@@ -136,7 +161,7 @@ exports.rejectorder=async(req,res)=>{
         const getbookedservice=await Bookedservice.findById(bookedserviceid);
         getbookedservice.servicestatus='rejected';
         await getbookedservice.save();
-        return res.status(200).send({message:"order accepted", status: 200, getbookedservice});
+        return res.status(200).send({message:"order successfully rejected", status: 200, getbookedservice});
     } catch (error) {
         console.log(error);
         return res.status(500).send({message:"error occured in try block please check cosole to see error", status: 500});
@@ -158,14 +183,14 @@ exports.orderrequests=async(req,res)=>{
     }
 }
 
-//total orders
+//total completed orders
 exports.totalorders=async(req,res)=>{
     try {
         const currentemail=req.email;
         const currentvendor=await Vendor.findOne({email:currentemail});
         const vendorid=currentvendor._id;
         console.log(vendorid);
-        const listofallordersbyvendorid=await Bookedservice.find({vendorid:vendorid, servicestatus:"accepted"});
+        const listofallordersbyvendorid=await Bookedservice.find({vendorid:vendorid, servicestatus:"completed"});
         return res.status(200).send({listofallordersbyvendorid, status: 200});
     }
     catch (error) {
@@ -188,5 +213,89 @@ exports.getallratings=async(req,res)=>{
         return res.status(500).send({message:"error occured in try block please check cosole to see error", status: 500});
     }
 }
+
+//booked service completed
+exports.completed=async(req,res)=>{
+    try {
+        const currentemail=req.email;
+        const currentvendor=await Vendor.findOne({email:currentemail});
+        if (!currentvendor) {
+            return res.status(400).send({message:"your are not a vendor", status: 400});
+        }
+        const bookedservice=req.body;
+        const bookedserviceid=bookedservice._id;
+        if (!bookedserviceid) {
+            return res.status(400).send({message:"bookedserviceid variable is null please pass the object of bookedservice", status: 400});
+        }
+        const getbookedservice=await Bookedservice.findById(bookedserviceid);
+        getbookedservice.servicestatus='completed';
+        await getbookedservice.save();
+        return res.status(200).send({message:"order completed", status: 200, getbookedservice});
+    } catch (error) {
+        console.log(error);
+        return res.status(500).send({message:"error occured in try block please check cosole to see error", status: 500});
+    }
+};
+
+//get all live orders
+exports.liveOrders=async(req,res)=>{
+    try {
+        const currentemail=req.email;
+        const currentvendor=await Vendor.findOne({email:currentemail});
+        const vendorid=currentvendor._id;
+        const listofallordersbyvendorid=await Bookedservice.find({vendorid:vendorid, servicestatus:"accepted"});
+        return res.status(200).send({listofallordersbyvendorid, status: 200});
+    } catch (error) {
+        console.log(error);
+        return res.status(500).send({message:"error occured in try block please check cosole to see error", status: 500});
+    }
+};
+
+//upadate profile photo of vendor
+exports.uploadprofilephoto=[upload.single('image'), async(req,res)=>{
+    try {
+        const vendoremail=req.email;
+        const vendor=await Vendor.findOne({email:vendoremail});
+        
+        const image = { path: req.file.path };
+
+        if (!image) {
+            return res.status(400).send({message: "Image is required", status: 400});
+        }
+        vendor.image = image;
+        await vendor.save();
+        return res.status(200).send({message: "Profile photo uploaded successfully", status: 200});
+    } catch (error) {
+        console.log(error);
+        return res.status(500).send({message: "Error occured in try block please check console to see error", status: 500});
+    }
+}];
+
+//upload kyc details and documents of vendor
+exports.kyc=[upload.array('images', 10), async(req,res)=>{
+    try {
+        const vendoremail=req.email;
+        const vendor=await Vendor.findOne({email:vendoremail});
+        const vendorid=vendor._id;
+        const {name, homeaddress, pincode, alternatephone, alternateemail}=req.body;
+
+        if (!name || !homeaddress || !pincode) {
+            return res.status(400).send({message: "All fields are required", status: 400});
+        }
+        const images = req.files?.map((file) => ({ path: file.path }));
+        if (!images) {
+            return res.status(400).send({message: "Images are required", status: 400});
+        }
+        console.log(images);
+        const kycdetails=new kyc({vendorid:vendorid, document:images, name, email:vendoremail, homeaddress, pincode, alternatephone, alternateemail, status:"pending"});
+        kycdetails.submitted=true;
+        await kycdetails.save();
+        return res.status(200).send({message: "kyc details uploaded successfully", status: 200});
+    } catch (error) {
+        console.log(error);
+        return res.status(500).send({message: "Error occured in try block please check console to see error", status: 500});
+    }
+}];
+
 
 

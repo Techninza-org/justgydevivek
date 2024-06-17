@@ -6,7 +6,24 @@ const Rating=require('../model/rating');
 const Bookedservice=require('../model/bookedservice');
 const bcrypt = require('bcrypt');
 
+const path = require('path');
+const multer = require('multer');
+const { stat } = require('fs');
+
 const SALT_ROUND=10;
+
+// Configure multer to store files on disk
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+      cb(null, 'uploads/');
+    },
+    filename: (req, file, cb) => {
+      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+      cb(null, uniqueSuffix + path.extname(file.originalname));
+    }
+  });
+  
+  const upload = multer({ storage: storage });
 
 //get all details of current user
 exports.getAll=async (req,res)=>{
@@ -37,7 +54,7 @@ exports.deleteuser=async (req,res)=>{
     }
 }
 
-// update user name and password
+// update user password
 exports.updateuser=async(req,res)=>{
     try {
         const {password}=req.body;
@@ -91,13 +108,17 @@ exports.bookservice=async(req,res)=>{
         //get vendor by vendoremail (it is available in service model).
         const vendorbyvendoremail=await Vendor.findOne({email:serv.vendoremail});
         const userbyuseremail=await User.findOne({email:currentuseremail});
-        console.log("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
-        console.log(userbyuseremail);
+        // console.log("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+        // console.log(userbyuseremail);
         const serviceid=serv._id;
         const vendorid=vendorbyvendoremail._id;
         const userid=userbyuseremail._id;
+
+        if (serviceid==null || vendorid==null || userid==null) {
+            return res.status(400).send({message:"serviceid or vendorid or userid is null", status: 400});  
+        }
         
-        const newbookeservice=new Bookedservice({serviceid,userid,vendorid});
+        const newbookeservice=new Bookedservice({serviceid,userid,vendorid, date: new Date()});
         console.log(serv._id);
         console.log(serv.vendoremail);
         newbookeservice.servicestatus="payment is done waiting for vendor to accept the service";
@@ -140,6 +161,7 @@ exports.setname=async(req,res)=>{
         return res.status(500).send({message:"error occured in try block please check cosole to see error", status: 500});
     }
 };
+
 
 //user home
 exports.userhome=async(req,res)=>{
@@ -191,6 +213,11 @@ exports.provideRating=async(req,res)=>{
         const userbyuseremail=await User.findOne({email:currentuseremail});
         const userid=userbyuseremail._id
         const {rating , vendoremail}=req.body;
+
+        if (rating>5 || rating<0) {
+            return res.status(400).send({message:"rating should be between 0 and 5", status: 400});
+        }
+
         const vendorbyvendoremail=await Vendor.findOne({email:vendoremail});
         const vendorid=vendorbyvendoremail._id;
         const newrating=new Rating({rating:rating, vendorid:vendorid, userid:userid});
@@ -201,3 +228,34 @@ exports.provideRating=async(req,res)=>{
         return res.status(500).send({message:"error occured in try block please check cosole to see error", status: 500});
     }
 };
+
+//get all services of vendor without catergory
+exports.getall=async(req,res)=>{
+    try {
+        // const currenUserEmail=req.email;
+        const listofservices=await Service.find({});
+        return res.status(200).send({listofservices, status: 200});
+    } catch (error) {
+        console.log(error);
+        return res.status(500).send({message:"error occured in try block please check cosole to see error", status: 500});
+    }
+};
+
+//upload user image
+exports.uploadimage=[upload.single('image'),async(req,res)=>{
+    try {
+        const currentuseremail=req.email;
+        const userbyuseremail=await User.findOne({email:currentuseremail});
+        
+        const image = { path: req.file.path };
+        if (!image) {
+            return res.status(400).send({ message: "Image not uploaded", status: 400});
+        }
+        userbyuseremail.image = image;
+        await userbyuseremail.save();
+        return res.status(200).send({ userbyuseremail, status: 200});
+    } catch (error) {
+        console.log(error);
+        return res.status(500).send({ message: "Internal server error", status: 500});
+    }
+}];

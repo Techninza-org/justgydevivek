@@ -28,7 +28,7 @@ exports.signup = async (req, res) => {
                 console.log(err);
                 return res.status(401).send({ message: "Unable to create user" });
             }
-            const user = new User({ name, mobile, email, password: hashedPassword });
+            const user = new User({ name, mobile, email, password: hashedPassword, usercreationdate: new Date()});
             await user.save();
             delete user.password;
             const token = jwt.sign({ email: user.email, role: user.role }, SECRET_KEY, { expiresIn: "7d" });
@@ -62,7 +62,7 @@ exports.vendorsignup = async (req, res) => {
                 console.log(err);
                 return res.status(401).send({ message: "Unable to create user" });
             }
-            const user = new Vendor({ name, mobile, email, password: hashedPassword });
+            const user = new Vendor({ name, mobile, email, password: hashedPassword, vendorcreationdate: new Date()});
             await user.save();
             // user.password = undefined; // Remove password from response
             delete user.password;
@@ -104,21 +104,21 @@ exports.login = async (req, res) => {
 exports.vendorlogin = async (req, res) => {
     const { email, password } = req.body;
     try {
-        const user = await Vendor.findOne({ email });
+        const vendor = await Vendor.findOne({ email });
 
-        if (!user) {
+        if (!vendor) {
             return res.status(401).send({ message: "Invalid credentials" });
         }
 
-        const isMatch = await bcrypt.compare(password, user.password);
+        const isMatch = await bcrypt.compare(password, vendor.password);
         if (!isMatch) {
             return res.status(401).send({ message: "Invalid credentials" });
         }
 
-        user.password = undefined; // Remove password from response
-        const token = jwt.sign({ email: user.email, role: user.role }, SECRET_KEY, { expiresIn: "7d" });
+        vendor.password = undefined; // Remove password from response
+        const token = jwt.sign({ email: vendor.email, role: vendor.role }, SECRET_KEY, { expiresIn: "7d" });
 
-        return res.status(200).send({ user, token, status: 200});
+        return res.status(200).send({ vendor, token, status: 200});
     } catch (err) {
         console.log(err);
         res.status(500).send({ message: "Internal server error" });

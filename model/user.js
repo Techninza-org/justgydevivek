@@ -20,6 +20,12 @@ const userschema=new mongoose.Schema({
         type: String,
         default: 'User'
     },
+    usercreationdate:{
+        type: Date
+    },
+    image:{
+        path: String
+    }
 })
 
 const User=mongoose.model('User',userschema);
