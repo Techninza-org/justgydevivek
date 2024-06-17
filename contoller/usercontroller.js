@@ -135,7 +135,7 @@ exports.myorders= async (req,res)=>{
     try {
         const currentuseremail=req.email;
         const userbyuseremail=await User.findOne({email:currentuseremail});
-        const userid=userbyuseremail._id;
+        const userid=userbyuseremail?._id;
         const listofallordersbyuserid=await Bookedservice.find({userid:userid});
         return res.status(200).send({listofallordersbyuserid, status: 200});
     } catch (error) {
