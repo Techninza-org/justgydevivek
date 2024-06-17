@@ -8,14 +8,23 @@ const user=require('./router/userrouter');
 const path = require('path');
 const {middleware}=require('./middleware/middleware');
 const { verify } = require('jsonwebtoken');
+const fs = require('fs');
 
 
 //importing express into 'app' for getting '.use()' function
 const app = express();
 
+const uploadsDir = path.join(__dirname, 'uploads');
+
+// Check if the uploads folder exists, create it if not
+if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+  }
+
 //MiddleWare
 app.use(bodyParser.json());
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/uploads', express.static(uploadsDir));
 
 
 //parent routers
