@@ -185,8 +185,8 @@ exports.addaddress=async(req,res)=>{
         const userid=userbyuseremail._id;
         const address=req.body;
         const newaddress=new Address({userid:userid, houseno:address.houseno, lineone:address.lineone, linetwo:address.linetwo, linethree:address.linethree, landmark:address.landmark, pincode:address.pincode});
-        const addressbyuserid=await Address.find({userid:userid});
         await newaddress.save();
+        const addressbyuserid=await Address.find({userid:userid});
         return res.status(200).send({newaddress, addressbyuserid, status: 200});
     } catch (error) {
         console.log(error);
