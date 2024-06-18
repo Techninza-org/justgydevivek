@@ -1,6 +1,8 @@
 const router = require('express').Router();
 
 const {getAll,updateuser,deleteuser,getallservices, bookservice, myorders, setname, userhome, addaddress, getbycatergory, provideRating, getall, uploadimage} = require('../contoller/usercontroller');
+const {generateuserotp,resenduserotp,verifyuserotp} = require('../contoller/testotp');
+
 
 router.get('/getalldetails',getAll);
 router.patch('/updatePassword',updateuser);
@@ -15,5 +17,10 @@ router.post('/getbycatergory',getbycatergory);
 router.post('/provideRating',provideRating);
 router.get('/getall',getall);
 router.patch('/uploadimage',uploadimage);
+
+router.get('/generateotp',generateuserotp);
+router.post('/verifyotp',verifyuserotp);
+router.get('/resendotp',resenduserotp);
+
 
 module.exports=router;

@@ -25,6 +25,10 @@ const vendorschema=new mongoose.Schema({
     },
     vendorcreationdate:{
         type: Date
+    },
+    isVerified:{
+        type: Boolean,
+        default: false
     }
 });
 

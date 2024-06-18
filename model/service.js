@@ -5,6 +5,9 @@ const serviceschema=new mongoose.Schema({
     servicename:{
         type: String
     },
+    title:{
+        type: String
+    },
     catergory:{
         type: String,
         enums: ['Medical', 'Security', 'Education', 'Finance', 'Marriage kutumb', 'Entertainment', 'FMCG','Services','Donations'],

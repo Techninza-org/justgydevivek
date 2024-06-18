@@ -16,8 +16,8 @@ const SALT_ROUND=10;
 // Configure multer to store files on disk
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-    //   cb(null, '../uploads/');
-    cb(null, path.join(__dirname, '../uploads/'));
+    //   cb(null, '../uploads/'); //this line is not working on server(linux-ubuntu) but works on local(windows)
+    cb(null, path.join(__dirname, '../uploads/')); //this line is working on server and local both.
     },
     filename: (req, file, cb) => {
       const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
@@ -33,7 +33,7 @@ const storage = multer.diskStorage({
 exports.addservicebyvendor=[upload.array('images', 10), async(req,res)=>{
     try {
         const vendoremail=req.email;
-        const {servicename, catergory, servicedescription, price, address}=req.body;
+        const {servicename, title, catergory, servicedescription, price, address}=req.body;
 
         if(!catergory){
             return res.status(400).send({message:"catergory is required", status: 400});
@@ -42,7 +42,7 @@ exports.addservicebyvendor=[upload.array('images', 10), async(req,res)=>{
         const images = req.files?.map((file) => ({ path: file.path }));
         console.log(images);
 
-        const newservice=new Service({servicename, catergory, servicedescription, price, image: images, address});
+        const newservice=new Service({servicename, title, catergory, servicedescription, price, image: images, address});
         newservice.vendoremail=vendoremail;
         await newservice.save();
         return res.status(200).send({newservice, status: 200});

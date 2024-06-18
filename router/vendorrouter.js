@@ -3,7 +3,7 @@ const router = require('express').Router();
 const multer = require('multer');
 
 const {kyc,completed, liveOrders,addservicebyvendor,allservices, uploadprofilephoto, updatevendor,getAll, deletevendor, acceptorder, rejectorder, orderrequests, totalorders, getallratings} = require('../contoller/vendorcontroller');
-
+const {generateotp, resendotp, verifyotp}=require('../contoller/testotp');
 
 router.post('/addservice', addservicebyvendor);
 router.get('/allservices',allservices);
@@ -20,5 +20,9 @@ router.patch('/uploadprofilephoto',  uploadprofilephoto);
 router.get('/liveorders',liveOrders);
 router.get('/completed',completed);
 router.post('/kyc',kyc);
+
+router.get('/generateotp',generateotp);
+router.post('/verifyotp',verifyotp);
+router.get('/resendotp',resendotp);
 
 module.exports=router;
