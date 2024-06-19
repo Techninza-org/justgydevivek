@@ -124,6 +124,7 @@ exports.bookservice=async(req,res)=>{
         console.log(serv.vendoremail);
         newbookeservice.servicestatus="payment is done waiting for vendor to accept the service";
         newbookeservice.catergory=serv.catergory;//+++++++
+        newbookeservice.quantity=serv.quantity;//+++++++
         await newbookeservice.save();
         return res.status(200).send({newbookeservice, status: 200});
     } catch (error) {
@@ -267,8 +268,12 @@ exports.addtocart=async(req,res)=>{
     try {
         const currentuseremail=req.email;
         const {serviceid, quantity}=req.body;
+        const user=await User.findOne({email:currentuseremail});
         const service=await Service.findById(serviceid);
-        const cart=new Cart({serviceid:serviceid, quantity:quantity, userid:currentuseremail, servicename: service.servicename});
+        if (!service) {
+            return res.status(400).send({message:"service not found please enter a valid serviceid", status: 400});
+        }
+        const cart=new Cart({serviceid:serviceid, quantity:quantity, userid:user._id, servicename: service.servicename});
         await cart.save();
         return res.status(200).send({cart, status: 200});
     } catch (error) {
@@ -293,8 +298,53 @@ exports.getCartServicesFromCurrentUser=async(req,res)=>{
 exports.bookAllServicesInCart=async(req,res)=>{
     try {
         const currentemail=req.email;
+        const user=await User.findOne({email:currentemail});
+        const cartList=await Cart.find({userid:user._id});
+        console.log(cartList);
+        for (let i = 0; i < cartList.length; i++) {
+            const cart=cartList[i];
+            const serviceid=cart.serviceid;
+            const userid=user._id;
+            const service=await Service.findById(serviceid);
+            const vendorid=service.vendorid;
+            const newbookeservice=new Bookedservice({serviceid,userid,vendorid, date: new Date()});
+            newbookeservice.servicestatus="payment is done waiting for vendor to accept the service";
 
+            newbookeservice.catergory=service.catergory;
+            newbookeservice.quantity=cart.quantity;
+            console.log(newbookeservice);
+            await newbookeservice.save();
+        }
+        await Cart.deleteMany({userid:user._id});
+        return res.status(200).send({message:"All services in cart booked", status: 200});
     } catch (error) {
-        
+        console.log(error);
+        return res.status(500).send({message:"Internal server error", status: 500});
+    }
+};
+
+//delete from service from cart
+exports.detelteServiceFromCart=async(req,res)=>{
+    try {
+        const {cartid}=req.body;
+        await Cart.findByIdAndDelete(cartid);
+        return res.status(200).send({message:"Service deleted from cart successfully", status: 200});
+    } catch (error) {
+        console.log(error);
+        return res.status(500).send({message:"Internal server error", status: 500});
+    }
+};
+
+//update quantity of added service in cart
+exports.updateQuantityOfServiceInCart=async(req,res)=>{
+    try {
+        const {cartid, quantity}=req.body;
+        const cart=await Cart.findById(cartid);
+        cart.quantity=quantity;
+        await cart.save();
+        return res.status(200).send({cart, status: 200});
+    } catch (error) {
+        console.log(error);
+        return res.status(500).send({message:"Internal server error", status: 500});
     }
 };

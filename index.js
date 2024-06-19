@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
+const cors = require('cors');
 
 const auth=require('./router/authrouter');
 const vendor=require('./router/vendorrouter');
@@ -13,6 +14,7 @@ const fs = require('fs');
 
 //importing express into 'app' for getting '.use()' function
 const app = express();
+app.use(cors());
 
 const uploadsDir = path.join(__dirname, 'uploads');
 

@@ -1,6 +1,9 @@
 const router = require('express').Router();
 
-const {getAll,updateuser,deleteuser,getallservices, bookservice, myorders, setname, userhome, addaddress, getbycatergory, provideRating, getall, uploadimage} = require('../contoller/usercontroller');
+const {getAll, addtocart, bookAllServicesInCart, detelteServiceFromCart, getCartServicesFromCurrentUser,
+     updateQuantityOfServiceInCart,updateuser,deleteuser,getallservices, bookservice, myorders, setname,
+    userhome, addaddress, getbycatergory, provideRating, getall, uploadimage} = require('../contoller/usercontroller');
+
 const {generateuserotp,resenduserotp,verifyuserotp} = require('../contoller/testotp');
 
 
@@ -21,6 +24,12 @@ router.patch('/uploadimage',uploadimage);
 router.get('/generateotp',generateuserotp);
 router.post('/verifyotp',verifyuserotp);
 router.get('/resendotp',resenduserotp);
+
+router.post('/addtocart',addtocart);
+router.post('/bookAllServicesInCart',bookAllServicesInCart);
+router.delete('/detelteServiceFromCart',detelteServiceFromCart);
+router.get('/getCartServicesFromCurrentUser',getCartServicesFromCurrentUser);
+router.patch('/updateQuantityOfServiceInCart',updateQuantityOfServiceInCart);
 
 
 module.exports=router;
