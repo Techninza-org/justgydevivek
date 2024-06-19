@@ -3,6 +3,7 @@ const Address=require('../model/address');
 const Service=require('../model/service');
 const Vendor=require('../model/vendor');
 const Rating=require('../model/rating');
+const Cart=require('../model/cart');
 const Bookedservice=require('../model/bookedservice');
 const bcrypt = require('bcrypt');
 
@@ -108,10 +109,10 @@ exports.bookservice=async(req,res)=>{
         //get vendor by vendoremail (it is available in service model).
         const vendorbyvendoremail=await Vendor.findOne({email:serv.vendoremail});
         const userbyuseremail=await User.findOne({email:currentuseremail});
-        // console.log("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
-        // console.log(userbyuseremail);
+
         const serviceid=serv._id;
         const vendorid=vendorbyvendoremail._id;
+        //const vendorid=serv.vendorid;
         const userid=userbyuseremail._id;
 
         if (serviceid==null || vendorid==null || userid==null) {
@@ -122,6 +123,7 @@ exports.bookservice=async(req,res)=>{
         console.log(serv._id);
         console.log(serv.vendoremail);
         newbookeservice.servicestatus="payment is done waiting for vendor to accept the service";
+        newbookeservice.catergory=serv.catergory;//+++++++
         await newbookeservice.save();
         return res.status(200).send({newbookeservice, status: 200});
     } catch (error) {
@@ -135,7 +137,7 @@ exports.myorders= async (req,res)=>{
     try {
         const currentuseremail=req.email;
         const userbyuseremail=await User.findOne({email:currentuseremail});
-        const userid=userbyuseremail?._id;  //change '?'
+        const userid=userbyuseremail?._id;  //changed '?'
         const listofallordersbyuserid=await Bookedservice.find({userid:userid});
         return res.status(200).send({listofallordersbyuserid, status: 200});
     } catch (error) {
@@ -259,3 +261,40 @@ exports.uploadimage=[upload.single('image'),async(req,res)=>{
         return res.status(500).send({ message: "Internal server error", status: 500});
     }
 }];
+
+//adding service to cart
+exports.addtocart=async(req,res)=>{
+    try {
+        const currentuseremail=req.email;
+        const {serviceid, quantity}=req.body;
+        const service=await Service.findById(serviceid);
+        const cart=new Cart({serviceid:serviceid, quantity:quantity, userid:currentuseremail, servicename: service.servicename});
+        await cart.save();
+        return res.status(200).send({cart, status: 200});
+    } catch (error) {
+        console.log(error);
+        return res.status(500).send({message:"Internal server error", status: 500});
+    }
+}
+
+//get all services in cart by current user
+exports.getCartServicesFromCurrentUser=async(req,res)=>{
+    try {
+        const currentuseremail=req.email;
+        const cartList=await Cart.find({userid:currentuseremail});
+        return res.status(200).send({cartList, status: 200});
+    } catch (error) {
+        console.log(error);
+        return res.status(500).send({message:"Internal server error", status: 500});
+    }
+};
+
+//book all services in cart
+exports.bookAllServicesInCart=async(req,res)=>{
+    try {
+        const currentemail=req.email;
+
+    } catch (error) {
+        
+    }
+};

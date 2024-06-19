@@ -22,6 +22,9 @@ const bookedserviceschema=new mongoose.Schema({
     },
     date:{
         type: Date
+    },
+    catergory:{
+        type: String
     }
 });
 

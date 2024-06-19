@@ -1,4 +1,4 @@
-const Otpschema=require('../model/otpschema');
+const Otpschema=require('../model/otpschema.js');
 const crypto=require('crypto');
 const Vendor=require('../model/vendor');
 const User=require('../model/user');

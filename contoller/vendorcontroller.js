@@ -40,10 +40,14 @@ exports.addservicebyvendor=[upload.array('images', 10), async(req,res)=>{
         }
 
         const images = req.files?.map((file) => ({ path: file.path }));
+
         console.log(images);
 
         const newservice=new Service({servicename, title, catergory, servicedescription, price, image: images, address});
         newservice.vendoremail=vendoremail;
+        
+        //newservice.vendoreid=vendorid;
+
         await newservice.save();
         return res.status(200).send({newservice, status: 200});
     } catch (error) {
