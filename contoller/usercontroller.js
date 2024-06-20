@@ -286,7 +286,8 @@ exports.addtocart=async(req,res)=>{
 exports.getCartServicesFromCurrentUser=async(req,res)=>{
     try {
         const currentuseremail=req.email;
-        const cartList=await Cart.find({userid:currentuseremail});
+        const user=await User.findOne({email:currentuseremail});
+        const cartList=await Cart.find({userid:user._id});
         return res.status(200).send({cartList, status: 200});
     } catch (error) {
         console.log(error);

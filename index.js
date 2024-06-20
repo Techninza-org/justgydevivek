@@ -14,6 +14,8 @@ const fs = require('fs');
 
 //importing express into 'app' for getting '.use()' function
 const app = express();
+
+//enabling cors for all requests (globally)
 app.use(cors());
 
 const uploadsDir = path.join(__dirname, 'uploads');
