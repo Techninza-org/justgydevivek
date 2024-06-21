@@ -12,6 +12,7 @@ const multer = require('multer');
 const { stat } = require('fs');
 
 const SALT_ROUND=10;
+const SECRET_KEY = 'aaaaaaaaaaaaabbbbbbbbbbbbbbbbbcccccccccccccccccccc';
 
 // Configure multer to store files on disk
 const storage = multer.diskStorage({
@@ -139,7 +140,10 @@ exports.myorders= async (req,res)=>{
         const currentuseremail=req.email;
         const userbyuseremail=await User.findOne({email:currentuseremail});
         const userid=userbyuseremail?._id;  //changed '?'
+
         const listofallordersbyuserid=await Bookedservice.find({userid:userid});
+        
+        // const listofallordersbyuserid=await Bookedservice.find({userid:userid, servicestatus:});
         return res.status(200).send({listofallordersbyuserid, status: 200});
     } catch (error) {
         console.log(error);
@@ -274,6 +278,11 @@ exports.addtocart=async(req,res)=>{
             return res.status(400).send({message:"service not found please enter a valid serviceid", status: 400});
         }
         const cart=new Cart({serviceid:serviceid, quantity:quantity, userid:user._id, servicename: service.servicename});
+        
+        //+++++++
+        cart.servicecatergory=service.catergory;
+        //+++++++
+
         await cart.save();
         return res.status(200).send({cart, status: 200});
     } catch (error) {
@@ -347,5 +356,48 @@ exports.updateQuantityOfServiceInCart=async(req,res)=>{
     } catch (error) {
         console.log(error);
         return res.status(500).send({message:"Internal server error", status: 500});
+    }
+};
+
+//update mobile and email
+exports.updateMobileAndEmail=async(req,res)=>{
+    try {
+        const currentemail=req.email;
+        const {mobile, email}=req.body;
+        const user=await User.findOne({email:currentemail});
+
+        if(!user){
+            return res.status(404).send({message:"User not found", status: 404});
+        }
+
+        if (mobile) {
+            user.mobile=mobile;
+        }
+        if (email) {
+            user.email=email;
+        }
+
+        await user.save();
+
+        const token = jwt.sign({ email: user.email, role: user.role }, SECRET_KEY, { expiresIn: "7d" });
+
+        return res.status(200).send({user, token, status: 200});
+    }
+    catch (error) {
+        console.log(error);
+        return res.status(500).send({message:"Internal server error inside catch block", status: 500});
+    }
+};
+
+//cancel booked service
+exports.cancelBookedService=async(req,res)=>{
+    try {
+        const {bookedserviceid}=req.body;
+        const bookedservice=await Bookedservice.findById(bookedserviceid);
+        bookedservice.servicestatus="cancelled by user";
+        await bookedservice.save();
+        return res.status(200).send({bookedservice, status: 200});
+    } catch (error) {
+        
     }
 };

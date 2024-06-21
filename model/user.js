@@ -11,6 +11,7 @@ const userschema=new mongoose.Schema({
     },
     mobile:{
         type: Number,
+        unique: true
     },
     password:{
         type: String,
@@ -30,7 +31,7 @@ const userschema=new mongoose.Schema({
         type: Boolean,
         default: false
     }
-})
+});
 
 const User=mongoose.model('User',userschema);
 module.exports=User;

@@ -10,6 +10,7 @@ const path = require('path');
 const multer = require('multer');
 
 const SALT_ROUND=10;
+const SECRET_KEY = 'aaaaaaaaaaaaabbbbbbbbbbbbbbbbbcccccccccccccccccccc';
 
 
 
@@ -303,6 +304,40 @@ exports.kyc=[upload.array('images', 10), async(req,res)=>{
         return res.status(500).send({message: "Error occured in try block please check console to see error", status: 500});
     }
 }];
+
+//update vendor moblile and email
+exports.updatemobileemail=async(req,res)=>{
+    try {
+        const {mobile,email}=req.body;
+        const currentvendoremail=req.email;
+        const vendor=await Vendor.findOne({email:currentvendoremail});
+
+        if(!vendor){
+            return res.status(400).send({message:"vendor not found", status: 400});
+        }
+
+        if (mobile) {
+            vendor.mobile = mobile;
+        }
+        if (email) {
+            vendor.email = email;
+            const allServicesOfCurrentVendor=await Service.find({vendoremail:currentvendoremail});
+            allServicesOfCurrentVendor.forEach(async(service)=>{
+                service.vendoremail=email;
+                await service.save();
+            });
+        }
+
+        await vendor.save();
+
+        const token = jwt.sign({ email: user.email, role: user.role }, SECRET_KEY, { expiresIn: "7d" });
+
+        return res.status(200).send({message: "Mobile and email updated successfully", token, status: 200});
+    } catch (error) {
+        console.log(error);
+        return res.status(500).send({message: "Error occured in try block please check console to see error", status: 500});
+    }
+};
 
 
 

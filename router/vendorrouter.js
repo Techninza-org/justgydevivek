@@ -2,7 +2,9 @@ const router = require('express').Router();
 
 const multer = require('multer');
 
-const {kyc,completed, liveOrders,addservicebyvendor,allservices, uploadprofilephoto, updatevendor,getAll, deletevendor, acceptorder, rejectorder, orderrequests, totalorders, getallratings} = require('../contoller/vendorcontroller');
+const {kyc,completed, liveOrders,addservicebyvendor,allservices, uploadprofilephoto,
+     updatevendor,getAll, deletevendor, acceptorder, rejectorder, orderrequests, totalorders,
+      getallratings, updatemobileemail} = require('../contoller/vendorcontroller');
 const {generateotp, resendotp, verifyotp}=require('../contoller/testotp');
 
 router.post('/addservice', addservicebyvendor);
@@ -24,5 +26,7 @@ router.post('/kyc',kyc);
 router.get('/generateotp',generateotp);
 router.post('/verifyotp',verifyotp);
 router.get('/resendotp',resendotp);
+
+router.patch('/updatemobileemail',updatemobileemail);
 
 module.exports=router;
