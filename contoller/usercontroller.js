@@ -141,9 +141,11 @@ exports.myorders= async (req,res)=>{
         const userbyuseremail=await User.findOne({email:currentuseremail});
         const userid=userbyuseremail?._id;  //changed '?'
 
-        const listofallordersbyuserid=await Bookedservice.find({userid:userid});
-        
-        // const listofallordersbyuserid=await Bookedservice.find({userid:userid, servicestatus:});
+        // const listofallordersbyuserid=await Bookedservice.find({userid:userid});
+        //+++++++
+        const listofallordersbyuserid=await Bookedservice.find({userid:userid, servicestatus: { $ne: "cancelled by user" }});
+        //+++++++
+
         return res.status(200).send({listofallordersbyuserid, status: 200});
     } catch (error) {
         console.log(error);
@@ -389,7 +391,7 @@ exports.updateMobileAndEmail=async(req,res)=>{
     }
 };
 
-//cancel booked service
+//cancel booked service by user
 exports.cancelBookedService=async(req,res)=>{
     try {
         const {bookedserviceid}=req.body;
@@ -398,6 +400,7 @@ exports.cancelBookedService=async(req,res)=>{
         await bookedservice.save();
         return res.status(200).send({bookedservice, status: 200});
     } catch (error) {
-        
+        console.log(error);
+        return res.status(500).send({message:"Internal server error", status: 500});
     }
 };

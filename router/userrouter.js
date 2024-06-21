@@ -2,7 +2,7 @@ const router = require('express').Router();
 
 const {getAll, addtocart, bookAllServicesInCart, detelteServiceFromCart, getCartServicesFromCurrentUser,
      updateQuantityOfServiceInCart,updateuser,deleteuser,getallservices, bookservice, myorders, setname,
-    userhome, addaddress, getbycatergory, provideRating, getall, uploadimage, updateMobileAndEmail} = require('../contoller/usercontroller');
+    userhome, addaddress, getbycatergory, provideRating, getall, uploadimage, updateMobileAndEmail, cancelBookedService} = require('../contoller/usercontroller');
 
 const {generateuserotp,resenduserotp,verifyuserotp} = require('../contoller/testotp');
 
@@ -32,6 +32,7 @@ router.get('/getCartServicesFromCurrentUser',getCartServicesFromCurrentUser);
 router.patch('/updateQuantityOfServiceInCart',updateQuantityOfServiceInCart);
 
 router.patch('/updateMobileAndEmail',updateMobileAndEmail);
+router.patch('/cancelBookedService',cancelBookedService);
 
 
 
