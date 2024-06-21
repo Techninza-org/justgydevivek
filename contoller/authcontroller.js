@@ -24,10 +24,10 @@ exports.signup = async (req, res) => {
             return res.status(500).send({ message: "User already exists" });
         }
         //+++++++++++++++++++
-        const userByMobile = await User.findOne({ mobile });
-        if (userByMobile) {
-            return res.status(500).send({ message: "Mobile number already exists" });
-        }
+        // const userByMobile = await User.findOne({ mobile });
+        // if (userByMobile) {
+        //     return res.status(500).send({ message: "Mobile number already exists" });
+        // }
 
         bcrypt.hash(password, SALT_ROUNDS, async (err, hashedPassword) => {
             if (err) {
@@ -64,10 +64,10 @@ exports.vendorsignup = async (req, res) => {
         }
 
         //+++++++++++++++++++ changes on 20-06-2024
-        const userByMobile = await Vendor.findOne({ mobile });
-        if (userByMobile) {
-            return res.status(500).send({ message: "Mobile number already exists" });
-        }
+        // const userByMobile = await Vendor.findOne({ mobile });
+        // if (userByMobile) {
+        //     return res.status(500).send({ message: "Mobile number already exists" });
+        // }
         //+++++++++++++++++++
 
         bcrypt.hash(password, SALT_ROUNDS, async (err, hashedPassword) => {
