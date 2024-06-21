@@ -291,6 +291,7 @@ exports.addtocart=async(req,res)=>{
         
         //+++++++
         cart.servicecatergory=service.catergory;
+        cart.serviceprice=service.price;
         //+++++++
 
         await cart.save();

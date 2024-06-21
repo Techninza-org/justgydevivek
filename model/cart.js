@@ -15,6 +15,9 @@ const cartschema=new mongoose.Schema({
     },
     servicecatergory:{
         type: String
+    },
+    serviceprice:{
+        type: Number
     }
 });
 

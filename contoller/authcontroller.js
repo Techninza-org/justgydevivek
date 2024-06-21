@@ -2,6 +2,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../model/user');
 const Vendor = require('../model/vendor');
+const Admin = require('../model/admin');
 
 const SALT_ROUNDS = 10;
 const SECRET_KEY = 'aaaaaaaaaaaaabbbbbbbbbbbbbbbbbcccccccccccccccccccc';
@@ -134,5 +135,63 @@ exports.vendorlogin = async (req, res) => {
     } catch (err) {
         console.log(err);
         res.status(500).send({ message: "Internal server error" });
+    }
+};
+
+
+//============================================================================================
+// Admin signup
+exports.adminsignup = async (req, res) => {
+    try {
+        const { email, password, name, mobile } = req.body;
+        let isAlreadyExist = false;
+        try {
+            const admin = await Admin.findOne({ email });
+            if (admin) {
+                isAlreadyExist = true;
+            }
+        } catch (err) {
+            console.log(err);
+        }
+        if (isAlreadyExist) {
+            return res.status(500).send({ message: "Admin already exists" });
+        }
+        bcrypt.hash(password, SALT_ROUNDS, async (err, hashedPassword) => {
+            if (err) {
+                console.log(err);
+                return res.status(401).send({ message: "Unable to create admin" });
+            }
+            const admin = new Admin({ name, email, password: hashedPassword, usercreationdate: new Date(), mobile: mobile});
+            await admin.save();
+            delete admin.password;
+            const token = jwt.sign({ email: admin.email, role: admin.role }, SECRET_KEY, { expiresIn: "7d" });
+            return res.status(200).send({admin: admin, token: token, status: 200});
+        });
+    }
+    catch (error) {
+        console.log(error);
+        res.status(500).send({ message: "Unable to create admin, inside catch block, email may already exist in our database" });
+    }
+};
+
+// Admin login
+exports.adminlogin = async (req, res) => {
+    const { email, password } = req.body;
+    try {
+        const admin = await Admin.findOne({ email });
+        if (!admin) {
+            return res.status(401).send({ message: "Invalid credentials admin not found" });
+        }
+        const isMatch = await bcrypt.compare(password, admin.password);
+        if (!isMatch) {
+            return res.status(401).send({ message: "Invalid credentials wrong password" });
+        }
+        admin.password = undefined; // Remove password from response
+        const token = jwt.sign({ email: admin.email, role: admin.role }, SECRET_KEY, { expiresIn: "7d" });
+        return res.status(200).send({ admin, token, status: 200 });
+    }
+    catch (err) {
+        console.log(err);
+        res.status(500).send({ message: "Internal server error inside catch block" });
     }
 };

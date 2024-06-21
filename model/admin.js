@@ -5,7 +5,7 @@ const adminSchema = new mongoose.Schema({
         type: String,
     },
     mobile: {
-        type: String,
+        type: Number,
     },
     email: {
         type: String,
@@ -16,7 +16,13 @@ const adminSchema = new mongoose.Schema({
         required: true,
     },
     usercreationdate: {
-        type: Date,
-        default: Date.now
+        type: Date
+    },
+    role: {
+        type: String,
+        default: 'Admin'
     }
 });
+
+const Admin = mongoose.model('Admin', adminSchema);
+module.exports = Admin;
