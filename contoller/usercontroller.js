@@ -280,6 +280,13 @@ exports.addtocart=async(req,res)=>{
         if (!service) {
             return res.status(400).send({message:"service not found please enter a valid serviceid", status: 400});
         }
+
+        //check if serviceid and userid is already in exist cart, if yes then return service already in cart in current user.
+        const getcartbyserviceid=await Cart.findOne({serviceid:serviceid, userid:user._id});
+        if (getcartbyserviceid) {
+            return res.status(400).send({message:"service already is exist in cart of current user", status: 400});
+        }
+
         const cart=new Cart({serviceid:serviceid, quantity:quantity, userid:user._id, servicename: service.servicename});
         
         //+++++++
@@ -476,6 +483,20 @@ exports.moveServiceFromWishlistToCart=async(req,res)=>{
     catch (error) {
         console.log(error);
         return res.status(500).send({message:"Internal server error inside trycatch may be whishlist id is invalid", status: 500});
+    }
+};
+
+//get all ratings given by user
+exports.getAllRatingsGivenByUser=async(req,res)=>{
+    try {
+        const currentemail=req.email;
+        const user=await User.findOne({email:currentemail});
+        const ratingList=await Rating.find({userid:user._id});
+        return res.status(200).send({ratingList, status: 200});
+    }
+    catch (error) {
+        console.log(error);
+        return res.status(500).send({message:"Internal server error", status: 500});
     }
 };
 
