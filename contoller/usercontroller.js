@@ -3,6 +3,7 @@ const Address=require('../model/address');
 const Service=require('../model/service');
 const Vendor=require('../model/vendor');
 const Rating=require('../model/rating');
+const Wishlist=require('../model/wishlist');
 const Cart=require('../model/cart');
 const Bookedservice=require('../model/bookedservice');
 const bcrypt = require('bcrypt');
@@ -404,3 +405,77 @@ exports.cancelBookedService=async(req,res)=>{
         return res.status(500).send({message:"Internal server error", status: 500});
     }
 };
+
+//add service to wishlist
+exports.addServiceToWishlist=async(req,res)=>{
+    try {
+        const currentemail=req.email;
+        const {serviceid}=req.body;
+        const user=await User.findOne({email:currentemail});
+        const userid=user._id;
+        const service=await Service.findById(serviceid);
+        if (!service) {
+            return res.status(400).send({message:"Service not found", status: 400});
+        }
+        const wishlist=new Wishlist({serviceid, userid});
+        wishlist.servicecatergory=service.catergory;
+        wishlist.serviceprice=service.price;
+        await wishlist.save();
+        return res.status(200).send({wishlist, status: 200});
+    }
+    catch (error) {
+        console.log(error);
+        return res.status(500).send({message:"Internal server error", status: 500});
+    }
+};
+
+//get all services in wishlist of current user
+exports.getAllServicesInWishlist=async(req,res)=>{
+    try {
+        const currentemail=req.email;
+        const user=await User.findOne({email:currentemail});
+        const wishlistList=await Wishlist.find({userid:user._id});
+        return res.status(200).send({wishlistList, status: 200});
+    }
+    catch (error) {
+        console.log(error);
+        return res.status(500).send({message:"Internal server error", status: 500});
+    }
+};
+
+//delete service from wishlist
+exports.deleteServiceFromWishlist=async(req,res)=>{
+    try {
+        const {wishlistid}=req.body;
+        await Wishlist.findByIdAndDelete(wishlistid);
+        return res.status(200).send({message:"Service deleted from wishlist successfully", status: 200});
+    }
+    catch (error) {
+        console.log(error);
+        return res.status(500).send({message:"Internal server error inside trycatch may be whishlist id is invalid", status: 500});
+    }
+};
+
+//move service from wishlist to cart
+exports.moveServiceFromWishlistToCart=async(req,res)=>{
+    try {
+        const {wishlistid}=req.body;
+        const wishlist=await Wishlist.findById(wishlistid);
+
+        if (!wishlist) {
+            return res.status(400).send({message:"Wishlist not found, wishlistId is invalid", status: 400});
+        }
+        const currentemail=req.email;
+        const user=await User.findOne({email:currentemail});
+        const cart=new Cart({serviceid:wishlist.serviceid, quantity:1, userid:user._id, servicename: wishlist.servicename});
+        cart.servicecatergory=wishlist.servicecatergory;
+        await cart.save();
+        await Wishlist.findByIdAndDelete(wishlistid);
+        return res.status(200).send({cart, status: 200});
+    }
+    catch (error) {
+        console.log(error);
+        return res.status(500).send({message:"Internal server error inside trycatch may be whishlist id is invalid", status: 500});
+    }
+};
+

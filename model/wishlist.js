@@ -8,7 +8,13 @@ const wishlistschema=new mongoose.Schema({
     userid:{
         type: String
     },
-    servicename:{
+    servicecatergory:{
         type: String
+    },
+    serviceprice:{
+        type: Number
     }
 });
+
+const Wishlist=mongoose.model('Wishlist',wishlistschema);
+module.exports=Wishlist;
