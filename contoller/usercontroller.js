@@ -127,8 +127,11 @@ exports.bookservice=async(req,res)=>{
         console.log(serv._id);
         console.log(serv.vendoremail);
         newbookeservice.servicestatus="payment is done waiting for vendor to accept the service";
+
         newbookeservice.catergory=serv.catergory;//+++++++
         newbookeservice.quantity=serv.quantity;//+++++++
+        newbookeservice.bookedprice=serv.price;//+++++++
+        
         await newbookeservice.save();
         return res.status(200).send({newbookeservice, status: 200});
     } catch (error) {
@@ -196,7 +199,16 @@ exports.addaddress=async(req,res)=>{
         const userbyuseremail=await User.findOne({email:currentuseremail});
         const userid=userbyuseremail._id;
         const address=req.body;
+        const {latitute, longitude}=req.body;
         const newaddress=new Address({userid:userid, houseno:address.houseno, lineone:address.lineone, linetwo:address.linetwo, linethree:address.linethree, landmark:address.landmark, pincode:address.pincode});
+        
+        if (latitute) {
+            newaddress.latitude=latitute;
+        }
+        if (longitude) {
+            newaddress.longitude=longitude;
+        }
+
         await newaddress.save();
         const addressbyuserid=await Address.find({userid:userid});
         return res.status(200).send({newaddress, addressbyuserid, status: 200});
@@ -550,6 +562,41 @@ exports.getAllCategoriesWithIcon=async(req,res)=>{
             catergoryListWithTotalServices.push({catergory, totalServices, catergoryObj});
         }
         return res.status(200).send({catergoryListWithTotalServices, status: 200});
+    }
+    catch (error) {
+        console.log(error);
+        return res.status(500).send({message:"Internal server error", status: 500});
+    }
+};
+
+//get service by serviceid
+exports.getServiceByServiceId=async(req,res)=>{
+    try {
+        if(req.role!=="User"){
+            return res.status(403).send({message:"your are not a User", status: 403});
+        }
+        const {serviceid}=req.body;
+        const service=await Service.findById(serviceid);
+        if (!service) {
+            return res.status(404).send({message:"Service not found", status: 404});
+        }
+
+        const vendor=await Vendor.findOne({email:service.vendoremail});
+        
+        const vendorid=vendor._id;
+        const ratingList=await Rating.find({vendorid:vendorid});
+        let totalRating=0;
+        for (let i = 0; i < ratingList.length; i++) {
+            const rating=ratingList[i];
+            totalRating+=rating.rating;
+        }
+
+        let averageRating=totalRating/ratingList.length;
+        if(!averageRating){
+            averageRating=0;
+        }
+
+        return res.status(200).send({service, averageRating, status: 200});
     }
     catch (error) {
         console.log(error);

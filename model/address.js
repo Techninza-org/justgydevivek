@@ -24,6 +24,12 @@ const addresschema=new mongoose.Schema({
     },
     vendorid:{
         type: String
+    },
+    longitude:{
+        type: Number
+    },
+    latitude:{
+        type: Number
     }
 });
 

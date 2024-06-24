@@ -34,8 +34,12 @@ const storage = multer.diskStorage({
 //add service by vender
 exports.addservicebyvendor=[upload.array('images', 10), async(req,res)=>{
     try {
+        if(req.role!=='Vendor'){
+            return res.status(400).send({message:"you are not a vendor", status: 400});
+        }
+
         const vendoremail=req.email;
-        const {servicename, title, catergory, servicedescription, price, address}=req.body;
+        const {servicename, title, catergory, servicedescription, price, address, servicerange}=req.body;
 
         //+++++++++++++++++++++++++++++++++++++
         if(catergory){
@@ -50,11 +54,16 @@ exports.addservicebyvendor=[upload.array('images', 10), async(req,res)=>{
             return res.status(400).send({message:"catergory is required", status: 400});
         }
 
+        //storing list of images path in images variable
         const images = req.files?.map((file) => ({ path: file.path }));
 
         console.log(images);
 
-        const newservice=new Service({servicename, title, catergory, servicedescription, price, image: images, address});
+        if(!servicerange){
+            return res.status(400).send({message:"please enter service range", status: 400});
+        }
+
+        const newservice=new Service({servicename, title, catergory, servicedescription, price, image: images, address, servicerange});
         newservice.vendoremail=vendoremail;
         
         //newservice.vendoreid=vendorid;
@@ -348,6 +357,26 @@ exports.updatemobileemail=async(req,res)=>{
         return res.status(500).send({message: "Error occured in try block please check console to see error", status: 500});
     }
 };
+
+//get kyc status of vendor
+exports.getkyc=async(req,res)=>{
+    try {
+        if(req.role!=='Vendor'){
+            return res.status(400).send({message:"you are not a vendor", status: 400});
+        }
+        const currentemail=req.email;
+        const currentvendor=await Vendor.findOne({email:currentemail});
+        const vendorid=currentvendor._id;
+        const kycdetails=await kyc.findOne({vendorid:vendorid});
+        const kycStatus=kycdetails.status;
+        return res.status(200).send({kycStatus, status: 200});
+    } catch (error) {
+        console.log(error);
+        return res.status(500).send({message: "Error occured in try block please check console to see error", status: 500});
+    }
+};
+
+
 
 
 

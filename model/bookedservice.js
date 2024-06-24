@@ -25,6 +25,9 @@ const bookedserviceschema=new mongoose.Schema({
     },
     catergory:{
         type: String
+    },
+    bookedprice:{
+        type: Number
     }
 });
 

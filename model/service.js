@@ -26,6 +26,9 @@ const serviceschema=new mongoose.Schema({
     },
     address:{
         type: Address.schema
+    },
+    servicerange:{
+        type: Number
     }
 });
 
