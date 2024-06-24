@@ -42,8 +42,8 @@ app.use('/user',user);
 app.use('/admin',admin);
 
 //mongoDb Connected
-// const dbURI = 'mongodb+srv://justgyde:7982900770@justgyde.6chveyd.mongodb.net/'; // MongoDB Atlas
-const dbURI = 'mongodb://localhost:27017/local'; // MongoDB Compass
+const dbURI = 'mongodb+srv://justgyde:7982900770@justgyde.6chveyd.mongodb.net/'; // MongoDB Atlas
+// const dbURI = 'mongodb://localhost:27017/local'; // MongoDB Compass
 mongoose.connect(dbURI, { useNewUrlParser: true, useUnifiedTopology: true })
     .then(() => {
         console.log('Connected to MongoDB');
