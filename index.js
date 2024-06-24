@@ -6,6 +6,7 @@ const cors = require('cors');
 const auth=require('./router/authrouter');
 const vendor=require('./router/vendorrouter');
 const user=require('./router/userrouter');
+const admin=require('./router/adminrouter');
 const path = require('path');
 const {middleware}=require('./middleware/middleware');
 const { verify } = require('jsonwebtoken');
@@ -36,6 +37,7 @@ app.use('/auth',auth);
 app.use(middleware);
 app.use('/vendor', vendor);
 app.use('/user',user);
+app.use('/admin',admin);
 
 //mongoDb Connected
 const dbURI = 'mongodb+srv://justgyde:7982900770@justgyde.6chveyd.mongodb.net/'; // MongoDB Atlas

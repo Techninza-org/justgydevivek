@@ -30,6 +30,10 @@ const vendorschema=new mongoose.Schema({
     isVerified:{
         type: Boolean,
         default: false
+    },
+    isKycCompleted:{
+        type: Boolean,
+        default: false
     }
 });
 

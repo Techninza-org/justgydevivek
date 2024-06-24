@@ -159,7 +159,7 @@ exports.adminsignup = async (req, res) => {
         bcrypt.hash(password, SALT_ROUNDS, async (err, hashedPassword) => {
             if (err) {
                 console.log(err);
-                return res.status(401).send({ message: "Unable to create admin" });
+                return res.status(401).send({ message: "Unable to create admin, password is required" });
             }
             const admin = new Admin({ name, email, password: hashedPassword, usercreationdate: new Date(), mobile: mobile});
             await admin.save();

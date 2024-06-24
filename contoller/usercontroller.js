@@ -501,3 +501,28 @@ exports.getAllRatingsGivenByUser=async(req,res)=>{
     }
 };
 
+//get all categories existed in database with total number services of that categories existed in database.
+exports.getAllCategories=async(req,res)=>{
+    try {
+        const listOfServices=await Service.find({});
+        const catergoryList=[];
+        for (let i = 0; i < listOfServices.length; i++) {
+            const service=listOfServices[i];
+            if (!catergoryList.includes(service.catergory)) {
+                catergoryList.push(service.catergory);
+            }
+        }
+        const catergoryListWithTotalServices=[];
+        for (let i = 0; i < catergoryList.length; i++) {
+            const catergory=catergoryList[i];
+            const totalServices=await Service.find({catergory:catergory}).countDocuments();
+            catergoryListWithTotalServices.push({catergory, totalServices});
+        }
+        return res.status(200).send({catergoryListWithTotalServices, status: 200});
+    }
+    catch (error) {
+        console.log(error);
+        return res.status(500).send({message:"Internal server error", status: 500});
+    }
+};
+

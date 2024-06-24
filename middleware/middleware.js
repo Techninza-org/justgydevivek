@@ -18,7 +18,13 @@ exports.middleware=async(req,res,next)=>{
         if(!email){
             return res.status(400).json({message:"email not found in token"});
         }
+        if(!decoded.role){
+            return res.status(400).json({message:"role not found in token"});
+        }
+        // console.log("4444444444");
+        // console.log(decoded.role);
         req.email=email;
+        req.role=decoded.role;
         next();
     });
 };

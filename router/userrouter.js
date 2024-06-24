@@ -3,7 +3,8 @@ const router = require('express').Router();
 const {getAll, addtocart, bookAllServicesInCart, detelteServiceFromCart, getCartServicesFromCurrentUser,
      updateQuantityOfServiceInCart,updateuser,deleteuser,getallservices, bookservice, myorders, setname,
     userhome, addaddress, getbycatergory, provideRating, getall, uploadimage, updateMobileAndEmail, cancelBookedService,
-addServiceToWishlist, deleteServiceFromWishlist, getAllServicesInWishlist,moveServiceFromWishlistToCart, getAllRatingsGivenByUser} = require('../contoller/usercontroller');
+addServiceToWishlist, deleteServiceFromWishlist, getAllServicesInWishlist,moveServiceFromWishlistToCart,
+ getAllRatingsGivenByUser, getAllCategories} = require('../contoller/usercontroller');
 
 const {generateuserotp,resenduserotp,verifyuserotp} = require('../contoller/testotp');
 
@@ -41,6 +42,7 @@ router.get('/getAllServicesInWishlist',getAllServicesInWishlist);
 router.post('/moveToCart',moveServiceFromWishlistToCart);
 
 router.get('/getAllRatingsGivenByUser',getAllRatingsGivenByUser);
+router.get('/getAllCategoriesWithNumOfServices',getAllCategories);
 
 
 
