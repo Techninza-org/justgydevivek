@@ -7,6 +7,7 @@ const Wishlist=require('../model/wishlist');
 const Cart=require('../model/cart');
 const Bookedservice=require('../model/bookedservice');
 const bcrypt = require('bcrypt');
+const Catergory=require('../model/catergory');
 
 const path = require('path');
 const multer = require('multer');
@@ -18,7 +19,8 @@ const SECRET_KEY = 'aaaaaaaaaaaaabbbbbbbbbbbbbbbbbcccccccccccccccccccc';
 // Configure multer to store files on disk
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-      cb(null, 'uploads/');
+    //   cb(null, 'uploads/');
+    cb(null, path.join(__dirname, '../uploads/'));
     },
     filename: (req, file, cb) => {
       const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
@@ -525,4 +527,34 @@ exports.getAllCategories=async(req,res)=>{
         return res.status(500).send({message:"Internal server error", status: 500});
     }
 };
+
+//get all categories existed in database with Catergory icon of that catergory and with total number services of that categories existed in database.
+exports.getAllCategoriesWithIcon=async(req,res)=>{
+    try {
+        const listOfServices=await Service.find({});
+        const catergoryList=[];
+        for (let i = 0; i < listOfServices.length; i++) {
+            const service=listOfServices[i];
+            if (!catergoryList.includes(service.catergory)) {
+                catergoryList.push(service.catergory);
+            }
+        }
+        const catergoryListWithTotalServices=[];
+        for (let i = 0; i < catergoryList.length; i++) {
+            const catergory=catergoryList[i];
+            const totalServices=await Service.find({catergory:catergory}).countDocuments();
+            const catergoryObj=await Catergory.findOne({catergorytype:catergory});
+            // if (!catergoryObj) {
+            //     return res.status(404).send({message:"Catergory not found", status: 404});
+            // }
+            catergoryListWithTotalServices.push({catergory, totalServices, catergoryObj});
+        }
+        return res.status(200).send({catergoryListWithTotalServices, status: 200});
+    }
+    catch (error) {
+        console.log(error);
+        return res.status(500).send({message:"Internal server error", status: 500});
+    }
+};
+
 

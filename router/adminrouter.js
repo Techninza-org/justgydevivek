@@ -1,7 +1,7 @@
 const router = require('express').Router();
 
 const {createUser,createVendor,deleteVendorById,fetchAllServices,fetchAllUsers, fetchAllVendors, fetchAllBookedServices
-    ,fetchAllAddresses,fetchAllKycs,fetchKycByVendorId,deleteUserById,fetchVendorById} = require('../contoller/admincontroller');
+    ,fetchAllAddresses,fetchAllKycs,fetchKycByVendorId,deleteUserById,fetchVendorById, addCatergory} = require('../contoller/admincontroller');
 
 //create
 router.post('/createUser',createUser);
@@ -22,5 +22,8 @@ router.get('/fetchAllKycs',fetchAllKycs);
 //fetch by Id
 router.get('/fetchKycByVendorId/:id',fetchKycByVendorId);
 router.get('/fetchVendorById/:id',fetchVendorById);
+
+//add
+router.post('/addCatergory',addCatergory);
 
 module.exports=router;

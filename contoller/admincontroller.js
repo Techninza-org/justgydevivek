@@ -5,11 +5,31 @@ const Service=require('../model/service');
 const BookedService=require('../model/bookedservice');
 const Address=require('../model/address');
 const Kyc=require('../model/kyc');
+const Catergory=require('../model/catergory');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
 const SECRET_KEY = 'aaaaaaaaaaaaabbbbbbbbbbbbbbbbbcccccccccccccccccccc';
 const SALT_ROUNDS = 10;
+
+
+const path = require('path');
+const multer = require('multer');
+
+// Configure multer to store files on disk
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+    //   cb(null, '../uploads/'); //this line is not working on server(linux-ubuntu) but works on local(windows)
+    cb(null, path.join(__dirname, '../uploads/')); //this line is working on server and local both.
+    },
+    filename: (req, file, cb) => {
+      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+      cb(null, uniqueSuffix + path.extname(file.originalname));
+    }
+  });
+  
+  const upload = multer({ storage: storage });
+
 
 //create Vendor
 exports.createVendor=async(req,res)=>{
@@ -449,6 +469,33 @@ exports.editUserById=async(req,res)=>{
 };
 
 //add catergory to application
+exports.addCatergory=[upload.single('icon'),async(req,res)=>{
+    try {
+        if(req.role!=='Admin'){
+            return res.status(401).json({message:'Unauthorized access you are not an admin',status:401});
+        }
+
+        const {catergorytype, startcolor, endcolor}=req.body;
+        const icon={ path:  req.file.path };
+
+        const isAlreadyExist=await Catergory.findOne({ catergorytype: catergorytype });
+        if(isAlreadyExist){
+            return res.status(400).json({message:'Catergory already exists',status:400});
+        }
+        // if (startcolor.length !== 7 || endcolor.length !== 7 || !startcolor || !endcolor || !startcolor.startsWith('#') || !endcolor.startsWith('#')){
+        //     return res.status(400).json({ message: 'invalid color, color should be start with # and must be length of 7 and color is mandatory to enter', status: 400 });
+        // }
+
+        const catergory=new Catergory({ catergorytype: catergorytype, catergoryicon: icon, startcolor: startcolor, endcolor: endcolor});
+        await catergory.save();
+        return res.status(200).json({message:'Catergory added successfully',status:200, catergory:catergory});
+        
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({message:'Unable to add catergory',status:500});
+    }
+}];
+
 
 
 

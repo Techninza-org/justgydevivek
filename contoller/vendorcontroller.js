@@ -8,6 +8,7 @@ const crypto = require('node:crypto');
 const bcrypt = require('bcrypt');
 const path = require('path');
 const multer = require('multer');
+const Catergory=require('../model/catergory');
 
 const SALT_ROUND=10;
 const SECRET_KEY = 'aaaaaaaaaaaaabbbbbbbbbbbbbbbbbcccccccccccccccccccc';
@@ -35,6 +36,15 @@ exports.addservicebyvendor=[upload.array('images', 10), async(req,res)=>{
     try {
         const vendoremail=req.email;
         const {servicename, title, catergory, servicedescription, price, address}=req.body;
+
+        //+++++++++++++++++++++++++++++++++++++
+        if(catergory){
+            const availableCatergories=await Catergory.findOne({catergorytype:catergory});
+            if (!availableCatergories) {
+                return res.status(400).send({message:"you cant create this type of catergory", status: 400});
+            }
+        }
+        //+++++++++++++++++++++++++++++++++++++
 
         if(!catergory){
             return res.status(400).send({message:"catergory is required", status: 400});

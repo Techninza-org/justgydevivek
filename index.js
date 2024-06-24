@@ -18,6 +18,8 @@ const app = express();
 
 //enabling cors for all requests (globally)
 app.use(cors());
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 
 const uploadsDir = path.join(__dirname, 'uploads');
 

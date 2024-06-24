@@ -6,6 +6,12 @@ const categoryschema=new mongoose.Schema({
     },
     catergoryicon:{
         path: String
+    },
+    startcolor:{
+        type: String
+    },
+    endcolor:{
+        type: String
     }
 });
 
