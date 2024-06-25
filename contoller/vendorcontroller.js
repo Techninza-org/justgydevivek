@@ -39,7 +39,7 @@ exports.addservicebyvendor=[upload.array('images', 10), async(req,res)=>{
         }
 
         const vendoremail=req.email;
-        const {servicename, title, catergory, servicedescription, price, address, servicerange}=req.body;
+        const {servicename, title, catergory, servicedescription, price, address, servicerange, discount}=req.body;
 
         //+++++++++++++++++++++++++++++++++++++
         if(catergory){
@@ -65,6 +65,12 @@ exports.addservicebyvendor=[upload.array('images', 10), async(req,res)=>{
 
         const newservice=new Service({servicename, title, catergory, servicedescription, price, image: images, address, servicerange});
         newservice.vendoremail=vendoremail;
+
+        if(discount || discount>=0 && discount<=100){
+            discount=Math.round(discount);
+            newservice.discount=discount;
+        }
+
         
         //newservice.vendoreid=vendorid;
 
@@ -359,7 +365,7 @@ exports.updatemobileemail=async(req,res)=>{
 };
 
 //get kyc status of vendor
-exports.getkyc=async(req,res)=>{
+exports.getkycStatus=async(req,res)=>{
     try {
         if(req.role!=='Vendor'){
             return res.status(400).send({message:"you are not a vendor", status: 400});
@@ -375,6 +381,37 @@ exports.getkyc=async(req,res)=>{
         return res.status(500).send({message: "Error occured in try block please check console to see error", status: 500});
     }
 };
+
+//update discount of service
+exports.updatediscount=async(req,res)=>{
+    try {
+        if(req.role!=='Vendor'){
+            return res.status(400).send({message:"you are not a vendor", status: 400});
+        }
+
+        const {discount, serviceid}=req.body;
+        const currentemail=req.email;
+        
+        if(!discount || !serviceid){
+            return res.status(400).send({message:"discount and serviceid is required", status: 400});
+        }
+        // const currentvendor=await Vendor.findOne({email:currentemail});
+        // if (!currentvendor) {
+        //     return res.status(400).send({message:"vendor not found", status: 400});
+        // }
+        const service=await Service.findOne({vendoremail:currentemail, _id:serviceid});
+        if(!service){
+            return res.status(400).send({message:"service not found", status: 400});
+        }
+        service.discount=discount;
+        await service.save();
+        return res.status(200).send({message:"discount updated successfully", status: 200});
+    } catch (error) {
+        console.log(error);
+        return res.status(500).send({message: "Error occured in try block please check console to see error", status: 500});
+    }
+};
+
 
 
 

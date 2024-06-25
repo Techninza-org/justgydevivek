@@ -29,6 +29,10 @@ const serviceschema=new mongoose.Schema({
     },
     servicerange:{
         type: Number
+    },
+    discount:{
+        type: Number,
+        default: 0
     }
 });
 
