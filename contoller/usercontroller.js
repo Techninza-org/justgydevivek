@@ -108,14 +108,23 @@ exports.getallservices=async(req,res)=>{
 exports.bookservice=async(req,res)=>{
     try {
         const currentuseremail=req.email;
-        const serv=req.body;
-        const {catergory, quantity, price, addressid, coinsused}=req.body;
+        // const serv=req.body;
+        const {quantity, addressid, coinsused}=req.body;
+        const {serviceid}=req.body;
+        if (!serviceid) {
+            return res.status(400).send({message:"serviceid is required", status: 400});
+        }
+
+        const servicebyId=await Service.findById(serviceid);
+        if (!servicebyId) {
+            return res.status(404).send({message:"service not found by this id", status: 404});
+        }
         
         //get vendor by vendoremail (it is available in service model).
-        const vendorbyvendoremail=await Vendor.findOne({email:serv.vendoremail});
+        const vendorbyvendoremail=await Vendor.findOne({email:servicebyId.vendoremail});
         const userbyuseremail=await User.findOne({email:currentuseremail});
 
-        const serviceid=serv._id;
+        // const serviceid=serv._id;
         const vendorid=vendorbyvendoremail._id;
         //const vendorid=serv.vendorid;
         const userid=userbyuseremail._id;   
@@ -134,9 +143,9 @@ exports.bookservice=async(req,res)=>{
         // newbookeservice.addressid=serv.addressid;//+++++++
         // newbookeservice.coinsused=serv.coinsused;//+++++++
         
-        newbookeservice.catergory=catergory;
+        newbookeservice.catergory=servicebyId.catergory;
         newbookeservice.quantity=quantity;
-        newbookeservice.bookedprice=price;
+        newbookeservice.bookedprice=servicebyId.price;
         newbookeservice.addressid=addressid;
         newbookeservice.coinsused=coinsused;
         
