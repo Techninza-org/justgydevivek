@@ -4,10 +4,11 @@ const multer = require('multer');
 
 const {kyc,completed, liveOrders,addservicebyvendor,allservices, uploadprofilephoto,
      updatevendor,getAll, deletevendor, acceptorder, rejectorder, orderrequests, totalorders,
-      getallratings, updatemobileemail,updatediscount,getkycStatus} = require('../contoller/vendorcontroller');
+      getallratings, updatemobileemail,updatediscount,getkycStatus, addaddress} = require('../contoller/vendorcontroller');
 const {generateotp, resendotp, verifyotp}=require('../contoller/testotp');
 
 router.post('/addservice', addservicebyvendor);
+router.post('/addaddress',addaddress);
 router.get('/allservices',allservices);
 router.patch('/update',updatevendor);
 router.get('/allvendorsdetails',getAll);

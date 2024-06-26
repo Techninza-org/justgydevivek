@@ -4,7 +4,7 @@ const {getAll, addtocart, bookAllServicesInCart, detelteServiceFromCart, getCart
      updateQuantityOfServiceInCart,updateuser,deleteuser,getallservices, bookservice, myorders, setname,
     userhome, addaddress, getbycatergory, provideRating, getall, uploadimage, updateMobileAndEmail, cancelBookedService,
 addServiceToWishlist, deleteServiceFromWishlist, getAllServicesInWishlist,moveServiceFromWishlistToCart,
- getAllRatingsGivenByUser, getAllCategories, getAllCategoriesWithIcon,getServiceByServiceId} = require('../contoller/usercontroller');
+ getAllRatingsGivenByUser, getAllCategories, getAllCategoriesWithIcon,getServiceByServiceId,addCoinsToUser} = require('../contoller/usercontroller');
 
 const {generateuserotp,resenduserotp,verifyuserotp} = require('../contoller/testotp');
 
@@ -45,6 +45,8 @@ router.get('/getAllRatingsGivenByUser',getAllRatingsGivenByUser);
 router.get('/getAllCategoriesWithNumOfServices',getAllCategories);
 router.get('/getAllCategoriesWithIcon',getAllCategoriesWithIcon);
 router.post('/getServiceByServiceId',getServiceByServiceId);
+
+router.post('/addCoinsToUser',addCoinsToUser);
 
 
 module.exports=router;

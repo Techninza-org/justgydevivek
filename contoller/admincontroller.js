@@ -522,7 +522,32 @@ exports.approveKycByVendorId=async(req,res)=>{
     }
 };
 
-//change kyc status by vendor id
+//change kyc status rejected by vendor id
+exports.rejectKycByVendorId=async(req,res)=>{
+    try {
+        if(req.role!=='Admin'){
+            return res.status(401).json({message:'Unauthorized access you are not an admin',status:401});
+        }
+
+        const {id}=req.params;
+        if(!id){
+            return res.status(400).json({message:'Vendor id is required, please pass it in url path',status:400});
+        }
+
+        const kyc=await Kyc.findOne({vendor:id});
+        if(!kyc){
+            return res.status(400).json({message:'Kyc not found, may be kyc id is not valid',status:400});
+        }
+
+        kyc.status='rejected';
+        await kyc.save();
+        return res.status(200).json({message:'Kyc rejected successfully',status:200});
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({message:'Unable to reject kyc, may be vendor-Id is invalid',status:500});
+    }
+};
+
 
 
 

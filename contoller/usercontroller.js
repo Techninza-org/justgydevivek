@@ -109,6 +109,7 @@ exports.bookservice=async(req,res)=>{
     try {
         const currentuseremail=req.email;
         const serv=req.body;
+        const {catergory, quantity, price, addressid, coinsused}=req.body;
         
         //get vendor by vendoremail (it is available in service model).
         const vendorbyvendoremail=await Vendor.findOne({email:serv.vendoremail});
@@ -117,26 +118,33 @@ exports.bookservice=async(req,res)=>{
         const serviceid=serv._id;
         const vendorid=vendorbyvendoremail._id;
         //const vendorid=serv.vendorid;
-        const userid=userbyuseremail._id;
+        const userid=userbyuseremail._id;   
 
         if (serviceid==null || vendorid==null || userid==null) {
             return res.status(400).send({message:"serviceid or vendorid or userid is null", status: 400});  
         }
         
         const newbookeservice=new Bookedservice({serviceid,userid,vendorid, date: new Date()});
-        console.log(serv._id);
-        console.log(serv.vendoremail);
+        
         newbookeservice.servicestatus="payment is done waiting for vendor to accept the service";
 
-        newbookeservice.catergory=serv.catergory;//+++++++
-        newbookeservice.quantity=serv.quantity;//+++++++
-        newbookeservice.bookedprice=serv.price;//+++++++
+        // newbookeservice.catergory=serv.catergory;//+++++++
+        // newbookeservice.quantity=serv.quantity;//+++++++
+        // newbookeservice.bookedprice=serv.price;//+++++++
+        // newbookeservice.addressid=serv.addressid;//+++++++
+        // newbookeservice.coinsused=serv.coinsused;//+++++++
+        
+        newbookeservice.catergory=catergory;
+        newbookeservice.quantity=quantity;
+        newbookeservice.bookedprice=price;
+        newbookeservice.addressid=addressid;
+        newbookeservice.coinsused=coinsused;
         
         await newbookeservice.save();
         return res.status(200).send({newbookeservice, status: 200});
     } catch (error) {
         console.log(error);
-        return res.status(500).send({message:"error occured in try block please check cosole to see error", status: 500});
+        return res.status(500).send({message:"error occured in try block please check console to see error", status: 500});
     }
 };
 
@@ -333,9 +341,15 @@ exports.getCartServicesFromCurrentUser=async(req,res)=>{
 exports.bookAllServicesInCart=async(req,res)=>{
     try {
         const currentemail=req.email;
+        const {addressid, usedcoins}=req.body;
+        const addressbyid=await Address.findById(addressid);
+        if (!addressbyid) {
+            return res.status(400).send({message:"Address id not found", status: 400});
+        }
         const user=await User.findOne({email:currentemail});
         const cartList=await Cart.find({userid:user._id});
         console.log(cartList);
+        let currentBookedServices=[];
         for (let i = 0; i < cartList.length; i++) {
             const cart=cartList[i];
             const serviceid=cart.serviceid;
@@ -347,11 +361,22 @@ exports.bookAllServicesInCart=async(req,res)=>{
 
             newbookeservice.catergory=service.catergory;
             newbookeservice.quantity=cart.quantity;
+            newbookeservice.addressid=addressid;
+            newbookeservice.bookedprice=cart.serviceprice;
+            newbookeservice.servicename=cart.servicename;
+            if (usedcoins>0) {
+                newbookeservice.coinsused=usedcoins;
+            }
+            if(!usedcoins){
+                newbookeservice.coinsused=0;
+            }
+
             console.log(newbookeservice);
             await newbookeservice.save();
+            savedServices.push(newbookeservice);
         }
         await Cart.deleteMany({userid:user._id});
-        return res.status(200).send({message:"All services in cart booked", status: 200});
+        return res.status(200).send({message:"All services in cart booked", currentBookedServices ,status: 200});
     } catch (error) {
         console.log(error);
         return res.status(500).send({message:"Internal server error", status: 500});
@@ -597,6 +622,28 @@ exports.getServiceByServiceId=async(req,res)=>{
         }
 
         return res.status(200).send({service, averageRating, status: 200});
+    }
+    catch (error) {
+        console.log(error);
+        return res.status(500).send({message:"Internal server error", status: 500});
+    }
+};
+
+//add coins to user
+exports.addCoinsToUser=async(req,res)=>{
+    try {
+        if(req.role!=="User"){
+            return res.status(403).send({message:"your are not a User", status: 403});
+        }
+        const {coins}=req.body;
+        const currentemail=req.email;
+        const user=await User.findOne({email:currentemail});
+        if (coins<0 || !coins) {
+            return res.status(400).send({message:"coins should be greater than 0 , or please enter coins", status: 400});
+        }
+        user.coins+=coins;
+        await user.save();
+        return res.status(200).send({user, status: 200});
     }
     catch (error) {
         console.log(error);

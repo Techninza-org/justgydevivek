@@ -18,19 +18,19 @@ const app = express();
 
 //enabling cors for all requests (globally)
 app.use(cors());
-// app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 
 
 const uploadsDir = path.join(__dirname, 'uploads');
+
 
 // Check if the uploads folder exists, create it if not
 if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir, { recursive: true });
   }
 
-//MiddleWare//
+//MiddleWare
 app.use(bodyParser.json());
-// app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/uploads', express.static(uploadsDir));
 
 

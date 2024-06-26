@@ -1,7 +1,9 @@
 const router = require('express').Router();
 
 const {createUser,createVendor,deleteVendorById,fetchAllServices,fetchAllUsers, fetchAllVendors, fetchAllBookedServices
-    ,fetchAllAddresses,fetchAllKycs,fetchKycByVendorId,deleteUserById,fetchVendorById, addCatergory} = require('../contoller/admincontroller');
+    ,fetchAllAddresses,fetchAllKycs,fetchKycByVendorId,deleteUserById,fetchVendorById, addCatergory,
+    approveKycByVendorId,rejectKycByVendorId,editUserById,editVendorById, fetchAllServicesByVendorEmail,
+     fetchServiceById, fetchUserById} = require('../contoller/admincontroller');
 
 //create
 router.post('/createUser',createUser);
@@ -18,12 +20,23 @@ router.get('/fetchAllVendors',fetchAllVendors);
 router.get('/fetchAllBookedServices',fetchAllBookedServices);
 router.get('/fetchAllAddresses',fetchAllAddresses);
 router.get('/fetchAllKycs',fetchAllKycs);
+router.get('/fetchAllServicesByVendorEmail/:email',fetchAllServicesByVendorEmail);
 
 //fetch by Id
 router.get('/fetchKycByVendorId/:id',fetchKycByVendorId);
 router.get('/fetchVendorById/:id',fetchVendorById);
+router.get('/fetchServiceById/:id',fetchServiceById);
+router.get('/fetchUserById/:id',fetchUserById);
 
 //add
 router.post('/addCatergory',addCatergory);
+
+//kyc
+router.patch('/approveKycByVendorId/:id',approveKycByVendorId);
+router.patch('/rejectKycByVendorId/:id',rejectKycByVendorId);
+
+//edit by Id
+router.patch('/editUserById/:id',editUserById);
+router.patch('/editVendorById/:id',editVendorById);
 
 module.exports=router;

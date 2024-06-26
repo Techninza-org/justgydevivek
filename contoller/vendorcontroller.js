@@ -48,7 +48,6 @@ exports.addservicebyvendor=[upload.array('images', 10), async(req,res)=>{
                 return res.status(400).send({message:"you cant create this type of catergory", status: 400});
             }
         }
-        //+++++++++++++++++++++++++++++++++++++
 
         if(!catergory){
             return res.status(400).send({message:"catergory is required", status: 400});
@@ -56,6 +55,17 @@ exports.addservicebyvendor=[upload.array('images', 10), async(req,res)=>{
 
         //storing list of images path in images variable
         const images = req.files?.map((file) => ({ path: file.path }));
+
+        //++++++++++++++++
+        // if (images){
+        //     for (let i = 0; i < images.length; i++) {
+        //         // images[i].path = images[i].path.replace(/\\/g, "/");
+        //         console.log(images[i].path);
+        //         images[i].path = images[i].path.replace("/home/ubuntu/new/", "");
+        //         console.log(images[i].path);
+        //     }
+        // }
+        //++++++++++++++++
 
         console.log(images);
 
@@ -406,6 +416,28 @@ exports.updatediscount=async(req,res)=>{
         service.discount=discount;
         await service.save();
         return res.status(200).send({message:"discount updated successfully", status: 200});
+    } catch (error) {
+        console.log(error);
+        return res.status(500).send({message: "Error occured in try block please check console to see error", status: 500});
+    }
+};
+
+//add address of vendor
+exports.addaddress=async(req,res)=>{
+    try {
+        if(req.role!=='Vendor'){
+            return res.status(400).send({message:"you are not a vendor", status: 400});
+        }
+
+        const {houseno, lineone, linetwo, linethree, landmark, pincode, longitude, latitude}=req.body;
+        const currentemail=req.email;
+        const vendor=await Vendor.findOne({email:currentemail});
+        if (!vendor) {
+            return res.status(400).send({message:"vendor not found", status: 400});
+        }
+        const address=new Address({houseno, lineone, linetwo, linethree, landmark, pincode, longitude, latitude, vendorid:vendor._id});
+        await address.save();
+        return res.status(200).send({message:"address added successfully", status: 200});
     } catch (error) {
         console.log(error);
         return res.status(500).send({message: "Error occured in try block please check console to see error", status: 500});

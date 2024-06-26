@@ -28,6 +28,12 @@ const bookedserviceschema=new mongoose.Schema({
     },
     bookedprice:{
         type: Number
+    },
+    addressid:{
+        type: String
+    },
+    coinsused:{
+        type: Number
     }
 });
 
