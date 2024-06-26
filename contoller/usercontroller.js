@@ -518,9 +518,12 @@ exports.deleteServiceFromWishlist=async(req,res)=>{
         if (!wishlistid) {
             return res.status(400).send({message:"wishlistid is required", status: 400});
         }
-        const wishlist= 
+        const wishlist=await Wishlist.findById(wishlistid);
+        if (!wishlist) {
+            return res.status(404).send({message:"Wishlist not found, wishlistId is invalid", status: 404});
+        }
         await Wishlist.findByIdAndDelete(wishlistid);
-        return res.status(200).send({message:"Service deleted from wishlist successfully", wishlistid, status: 200});
+        return res.status(200).send({message:"Service deleted from wishlist successfully", deletedwishlist: wishlist, status: 200});
     }
     catch (error) {
         console.log(error);
