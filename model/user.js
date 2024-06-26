@@ -30,6 +30,10 @@ const userschema=new mongoose.Schema({
     isVerified:{
         type: Boolean,
         default: false
+    },
+    totalCoins:{
+        type: Number,
+        default: 0
     }
 });
 

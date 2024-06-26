@@ -4,13 +4,14 @@ const {getAll, addtocart, bookAllServicesInCart, detelteServiceFromCart, getCart
      updateQuantityOfServiceInCart,updateuser,deleteuser,getallservices, bookservice, myorders, setname,
     userhome, addaddress, getbycatergory, provideRating, getall, uploadimage, updateMobileAndEmail, cancelBookedService,
 addServiceToWishlist, deleteServiceFromWishlist, getAllServicesInWishlist,moveServiceFromWishlistToCart,
- getAllRatingsGivenByUser, getAllCategories, getAllCategoriesWithIcon,getServiceByServiceId,addCoinsToUser} = require('../contoller/usercontroller');
+ getAllRatingsGivenByUser, getAllCategoriesWithIcon,getServiceByServiceId,addCoinsToUser,updateUser} = require('../contoller/usercontroller');
 
 const {generateuserotp,resenduserotp,verifyuserotp} = require('../contoller/testotp');
 
 
 router.get('/getalldetails',getAll);
 router.patch('/updatePassword',updateuser);
+router.patch('/update',updateUser);
 router.delete('/delete',deleteuser);
 router.post('/getallservices',getallservices);
 router.post('/bookservice',bookservice);
@@ -42,8 +43,7 @@ router.get('/getAllServicesInWishlist',getAllServicesInWishlist);
 router.post('/moveToCart',moveServiceFromWishlistToCart);
 
 router.get('/getAllRatingsGivenByUser',getAllRatingsGivenByUser);
-router.get('/getAllCategoriesWithNumOfServices',getAllCategories);
-router.get('/getAllCategoriesWithIcon',getAllCategoriesWithIcon);
+router.get('/getAllCategoriesWithNoOfServices',getAllCategoriesWithIcon);
 router.post('/getServiceByServiceId',getServiceByServiceId);
 
 router.post('/addCoinsToUser',addCoinsToUser);

@@ -8,6 +8,7 @@ const Cart=require('../model/cart');
 const Bookedservice=require('../model/bookedservice');
 const bcrypt = require('bcrypt');
 const Catergory=require('../model/catergory');
+const jwt = require('jsonwebtoken');
 
 const path = require('path');
 const multer = require('multer');
@@ -118,6 +119,11 @@ exports.bookservice=async(req,res)=>{
         const servicebyId=await Service.findById(serviceid);
         if (!servicebyId) {
             return res.status(404).send({message:"service not found by this id", status: 404});
+        }
+
+        const addressbyId=await Address.findById(addressid);
+        if (!addressbyId) {
+            return res.status(404).send({message:"address not found by this id", status: 404});
         }
         
         //get vendor by vendoremail (it is available in service model).
@@ -351,10 +357,10 @@ exports.bookAllServicesInCart=async(req,res)=>{
     try {
         const currentemail=req.email;
         const {addressid, usedcoins}=req.body;
-        const addressbyid=await Address.findById(addressid);
-        if (!addressbyid) {
-            return res.status(400).send({message:"Address id not found", status: 400});
-        }
+        // const addressbyid=await Address.findById(addressid);
+        // if (!addressbyid) {
+        //     return res.status(400).send({message:"Address id not found", status: 400});
+        // }
         const user=await User.findOne({email:currentemail});
         const cartList=await Cart.find({userid:user._id});
         console.log(cartList);
@@ -382,7 +388,7 @@ exports.bookAllServicesInCart=async(req,res)=>{
 
             console.log(newbookeservice);
             await newbookeservice.save();
-            savedServices.push(newbookeservice);
+            currentBookedServices.push(newbookeservice);
         }
         await Cart.deleteMany({userid:user._id});
         return res.status(200).send({message:"All services in cart booked", currentBookedServices ,status: 200});
@@ -473,6 +479,12 @@ exports.addServiceToWishlist=async(req,res)=>{
         if (!service) {
             return res.status(400).send({message:"Service not found", status: 400});
         }
+        //check if serviceid and userid is already in exist wishlist, if yes then return service already in wishlist in current user.
+        const getwishlistbyserviceid=await Wishlist.findOne({serviceid:serviceid, userid:userid});
+        if (getwishlistbyserviceid) {
+            return res.status(400).send({message:"service already is exist in wishlist of current user", status: 400});
+        }
+
         const wishlist=new Wishlist({serviceid, userid});
         wishlist.servicecatergory=service.catergory;
         wishlist.serviceprice=service.price;
@@ -503,8 +515,12 @@ exports.getAllServicesInWishlist=async(req,res)=>{
 exports.deleteServiceFromWishlist=async(req,res)=>{
     try {
         const {wishlistid}=req.body;
+        if (!wishlistid) {
+            return res.status(400).send({message:"wishlistid is required", status: 400});
+        }
+        const wishlist= 
         await Wishlist.findByIdAndDelete(wishlistid);
-        return res.status(200).send({message:"Service deleted from wishlist successfully", status: 200});
+        return res.status(200).send({message:"Service deleted from wishlist successfully", wishlistid, status: 200});
     }
     catch (error) {
         console.log(error);
@@ -550,29 +566,29 @@ exports.getAllRatingsGivenByUser=async(req,res)=>{
 };
 
 //get all categories existed in database with total number services of that categories existed in database.
-exports.getAllCategories=async(req,res)=>{
-    try {
-        const listOfServices=await Service.find({});
-        const catergoryList=[];
-        for (let i = 0; i < listOfServices.length; i++) {
-            const service=listOfServices[i];
-            if (!catergoryList.includes(service.catergory)) {
-                catergoryList.push(service.catergory);
-            }
-        }
-        const catergoryListWithTotalServices=[];
-        for (let i = 0; i < catergoryList.length; i++) {
-            const catergory=catergoryList[i];
-            const totalServices=await Service.find({catergory:catergory}).countDocuments();
-            catergoryListWithTotalServices.push({catergory, totalServices});
-        }
-        return res.status(200).send({catergoryListWithTotalServices, status: 200});
-    }
-    catch (error) {
-        console.log(error);
-        return res.status(500).send({message:"Internal server error", status: 500});
-    }
-};
+// exports.getAllCategories=async(req,res)=>{
+//     try {
+//         const listOfServices=await Service.find({});
+//         const catergoryList=[];
+//         for (let i = 0; i < listOfServices.length; i++) {
+//             const service=listOfServices[i];
+//             if (!catergoryList.includes(service.catergory)) {
+//                 catergoryList.push(service.catergory);
+//             }
+//         }
+//         const catergoryListWithTotalServices=[];
+//         for (let i = 0; i < catergoryList.length; i++) {
+//             const catergory=catergoryList[i];
+//             const totalServices=await Service.find({catergory:catergory}).countDocuments();
+//             catergoryListWithTotalServices.push({catergory, totalServices});
+//         }
+//         return res.status(200).send({catergoryListWithTotalServices, status: 200});
+//     }
+//     catch (error) {
+//         console.log(error);
+//         return res.status(500).send({message:"Internal server error", status: 500});
+//     }
+// };
 
 //get all categories existed in database with Catergory icon of that catergory and with total number services of that categories existed in database.
 exports.getAllCategoriesWithIcon=async(req,res)=>{
@@ -650,7 +666,7 @@ exports.addCoinsToUser=async(req,res)=>{
         if (coins<0 || !coins) {
             return res.status(400).send({message:"coins should be greater than 0 , or please enter coins", status: 400});
         }
-        user.coins+=coins;
+        user.totalCoins+=coins;
         await user.save();
         return res.status(200).send({user, status: 200});
     }
@@ -659,5 +675,51 @@ exports.addCoinsToUser=async(req,res)=>{
         return res.status(500).send({message:"Internal server error", status: 500});
     }
 };
+
+//update user name, email, mobile, image
+exports.updateUser=[upload.single('image'), async(req,res)=>{
+    try {
+        if(req.role!=="User"){
+            return res.status(403).send({message:"your are not a User", status: 403});
+        }
+        const {name, email, mobile}=req.body;
+        const currentemail=req.email;
+        
+        const user=await User.findOne({email:currentemail});
+        
+        if (name) {
+            user.name=name;
+        }
+        if (email) {
+            const emailExists=await User.findOne({email:email});
+            if (emailExists) {
+                return res.status(400).send({message:"Email already exists", status: 400});
+            }
+            user.email=email;
+        }
+        if (mobile) {
+            const mobileExists=await User.findOne({mobile : mobile});
+            if (mobileExists) {
+                return res.status(400).send({message:"Mobile already exists", status: 400});
+            }
+            user.mobile=mobile;
+        }
+
+        //checking if image/file is uploaded or not by user on browser/postman
+        if(req.file){
+            image = { path: req.file.path };
+            user.image=image;
+        }
+        
+        await user.save();
+        
+        const token = jwt.sign({ email: user.email, role: user.role }, SECRET_KEY, { expiresIn: "7d" });
+        return res.status(200).send({user, token, status: 200});
+
+    } catch (error) {
+        console.log(error);
+        return res.status(500).send({message:"Internal server error", status: 500});
+    }
+}];
 
 
