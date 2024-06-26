@@ -121,10 +121,10 @@ exports.bookservice=async(req,res)=>{
             return res.status(404).send({message:"service not found by this id", status: 404});
         }
 
-        const addressbyId=await Address.findById(addressid);
-        if (!addressbyId) {
-            return res.status(404).send({message:"address not found by this id", status: 404});
-        }
+        // const addressbyId=await Address.findById(addressid);
+        // if (!addressbyId) {
+        //     return res.status(404).send({message:"address not found by this id", status: 404});
+        // }
         
         //get vendor by vendoremail (it is available in service model).
         const vendorbyvendoremail=await Vendor.findOne({email:servicebyId.vendoremail});
@@ -402,8 +402,12 @@ exports.bookAllServicesInCart=async(req,res)=>{
 exports.detelteServiceFromCart=async(req,res)=>{
     try {
         const {cartid}=req.body;
+        const cart=await Cart.findById(cartid);
+        if (!cart) {
+            return res.status(404).send({message:"Cart not found, cart id is invalid", status: 404});
+        }
         await Cart.findByIdAndDelete(cartid);
-        return res.status(200).send({message:"Service deleted from cart successfully", status: 200});
+        return res.status(200).send({message:"Service deleted from cart successfully", deleterCart: cart, status: 200});
     } catch (error) {
         console.log(error);
         return res.status(500).send({message:"Internal server error", status: 500});
@@ -414,7 +418,13 @@ exports.detelteServiceFromCart=async(req,res)=>{
 exports.updateQuantityOfServiceInCart=async(req,res)=>{
     try {
         const {cartid, quantity}=req.body;
+        if(!cartid || !quantity){//***** */
+            return res.status(400).send({message:"cartid and quantity is required", status: 400});
+        }
         const cart=await Cart.findById(cartid);
+        if (!cart) {
+            return res.status(404).send({message:"Cart not found, cart id is invalid", status: 404});
+        }
         cart.quantity=quantity;
         await cart.save();
         return res.status(200).send({cart, status: 200});
