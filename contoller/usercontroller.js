@@ -141,7 +141,7 @@ exports.bookservice=async(req,res)=>{
         
         const newbookeservice=new Bookedservice({serviceid,userid,vendorid, date: new Date()});
         
-        newbookeservice.servicestatus="payment is done waiting for vendor to accept the service";
+        newbookeservice.servicestatus="PLACED";
 
         // newbookeservice.catergory=serv.catergory;//+++++++
         // newbookeservice.quantity=serv.quantity;//+++++++
@@ -172,7 +172,7 @@ exports.myorders= async (req,res)=>{
 
         // const listofallordersbyuserid=await Bookedservice.find({userid:userid});
         //+++++++
-        const listofallordersbyuserid=await Bookedservice.find({userid:userid, servicestatus: { $ne: "cancelled by user" }});
+        const listofallordersbyuserid=await Bookedservice.find({userid:userid /*, servicestatus: { $ne: "cancelled by user" }*/});
         //+++++++
 
         return res.status(200).send({listofallordersbyuserid, status: 200});
@@ -312,6 +312,11 @@ exports.addtocart=async(req,res)=>{
     try {
         const currentuseremail=req.email;
         const {serviceid, quantity}=req.body;
+        
+        if (!serviceid || !quantity) {
+            return res.status(400).send({message:"serviceid and quantity is required", status: 400});
+        }
+
         const user=await User.findOne({email:currentuseremail});
         const service=await Service.findById(serviceid);
         if (!service) {
@@ -345,7 +350,15 @@ exports.getCartServicesFromCurrentUser=async(req,res)=>{
         const currentuseremail=req.email;
         const user=await User.findOne({email:currentuseremail});
         const cartList=await Cart.find({userid:user._id});
-        return res.status(200).send({cartList, status: 200});
+        let services=[];
+        for (let i=0;i<cartList.length;i++){
+            const serviceid=cartList[i].serviceid;
+            const servicebyid=await Service.findById(serviceid);
+            services.push(servicebyid, {quantity : cartList[i].quantity});
+        }
+
+
+        return res.status(200).send({services, status: 200});
     } catch (error) {
         console.log(error);
         return res.status(500).send({message:"Internal server error", status: 500});
@@ -372,7 +385,7 @@ exports.bookAllServicesInCart=async(req,res)=>{
             const service=await Service.findById(serviceid);
             const vendorid=service.vendorid;
             const newbookeservice=new Bookedservice({serviceid,userid,vendorid, date: new Date()});
-            newbookeservice.servicestatus="payment is done waiting for vendor to accept the service";
+            newbookeservice.servicestatus="PLACED";
 
             newbookeservice.catergory=service.catergory;
             newbookeservice.quantity=cart.quantity;
@@ -418,8 +431,8 @@ exports.detelteServiceFromCart=async(req,res)=>{
 exports.updateQuantityOfServiceInCart=async(req,res)=>{
     try {
         const {cartid, quantity}=req.body;
-        if(!cartid || !quantity){//***** */
-            return res.status(400).send({message:"cartid and quantity is required", status: 400});
+        if(!cartid || !quantity || quantity<1){
+            return res.status(400).send({message:"cartid and quantity is required and quantity should be greater than 0", status: 400});
         }
         const cart=await Cart.findById(cartid);
         if (!cart) {
@@ -735,4 +748,19 @@ exports.updateUser=[upload.single('image'), async(req,res)=>{
     }
 }];
 
-
+//get all address of current user
+exports.getAllAddress=async(req,res)=>{
+    try {
+        if(req.role!=="User"){
+            return res.status(403).send({message:"your are not a User", status: 403});
+        }
+        const currentemail=req.email;
+        const user=await User.findOne({email:currentemail});
+        const addressList=await Address.find({userid:user._id});
+        return res.status(200).send({addressList, status: 200});
+    }
+    catch (error) {
+        console.log(error);
+        return res.status(500).send({message:"Internal server error", status: 500});
+    }
+};
