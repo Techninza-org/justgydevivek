@@ -174,6 +174,7 @@ exports.myorders= async (req,res)=>{
         //+++++++
         const listofallordersbyuserid=await Bookedservice.find({userid:userid /*, servicestatus: { $ne: "cancelled by user" }*/});
         //+++++++
+        
 
         return res.status(200).send({listofallordersbyuserid, status: 200});
     } catch (error) {
@@ -218,6 +219,7 @@ exports.userhome=async(req,res)=>{
 //add address
 exports.addaddress=async(req,res)=>{
     try {
+
         const currentuseremail=req.email;
         const userbyuseremail=await User.findOne({email:currentuseremail});
         const userid=userbyuseremail._id;
@@ -241,12 +243,38 @@ exports.addaddress=async(req,res)=>{
     }
 };
 
-//get all services by catergory
+//get all services by catergory and with service averageRating and total number of ratings of that service
 exports.getbycatergory=async(req,res)=>{
     try {
         const {catergory}=req.body;
         const listofservices=await Service.find({catergory:catergory});
-        return res.status(200).send({listofservices, status: 200});
+
+        //list for storing services with average rating and total number of ratings of that service
+        const list=[];
+
+        //get all ratings of services of by serviceid
+        for (let i=0;i<listofservices.length;i++){
+            const serviceid=listofservices[i]._id;
+            const allratings=await Rating.find({serviceid:serviceid});
+            
+            //calculate total rating of each service by serviceid
+            let totalrating=0;
+            for (let j=0;j<allratings.length;j++){
+                totalrating+=allratings[j].rating;
+            }
+            
+            //calculate average rating of each service by serviceid
+            let rating=0;
+            if (allratings.length>0) {
+                rating=totalrating/allratings.length;
+            }
+            listofservices[i].rating=rating;
+
+            list.push({service: listofservices[i], averageRating: rating, totalRatings: allratings.length});
+        }
+
+        return res.status(200).send({list, status: 200});
+
     } catch (error) {
         console.log(error);
         return res.status(500).send({message:"error occured in try block please check cosole to see error", status: 500});
@@ -259,7 +287,7 @@ exports.provideRating=async(req,res)=>{
         const currentuseremail=req.email;
         const userbyuseremail=await User.findOne({email:currentuseremail});
         const userid=userbyuseremail._id
-        const {rating , vendoremail}=req.body;
+        const {rating , vendoremail, serviceid}=req.body;
 
         if (rating>5 || rating<0) {
             return res.status(400).send({message:"rating should be between 0 and 5", status: 400});
@@ -267,7 +295,7 @@ exports.provideRating=async(req,res)=>{
 
         const vendorbyvendoremail=await Vendor.findOne({email:vendoremail});
         const vendorid=vendorbyvendoremail._id;
-        const newrating=new Rating({rating:rating, vendorid:vendorid, userid:userid});
+        const newrating=new Rating({rating:rating, vendorid:vendorid, userid:userid, serviceid:serviceid});
         await newrating.save();
         return res.status(200).send({newrating, status: 200});
     } catch (error) {
@@ -768,5 +796,65 @@ exports.getAllAddress=async(req,res)=>{
         return res.status(500).send({message:"Internal server error", status: 500});
     }
 };
+
+//get all rating of by serviceid and vendorid
+exports.getAllRatingByServiceIdAndVendorId=async(req,res)=>{
+    try {
+        const {serviceid, vendoremail}=req.body;
+        if (!serviceid || !vendoremail) {
+            return res.status(400).send({message:"serviceid and vendoremail is required", status: 400});
+        }
+        const vendor=await Vendor.findOne({email:vendoremail});
+        const vendorid=vendor._id;
+        const ratingList=await Rating.find({serviceid:serviceid, vendorid:vendorid});
+        return res.status(200).send({ratingList, status: 200});
+    }
+    catch (error) {
+        console.log(error);
+        return res.status(500).send({message:"Internal server error", status: 500});
+    }
+};
+
+//get booked with highest quantity of services from all bookedservices in database
+exports.getBookedServiceWithHighestQuantity=async(req,res)=>{
+    try {
+
+        //get all booked services from database in a list
+        const bookedService=await Bookedservice.find({}).sort({quantity:-1}).limit(1);
+        if (!bookedService) {
+            return res.status(404).send({message:"Booked service not found", status: 404});
+        }
+
+        //quatity to top most booked service
+        const quantity=bookedService[0].quantity;
+
+        //get top most service by serviceid of booked service using bookedService list
+        const service=await Service.findById(bookedService[0].serviceid);
+        return res.status(200).send({service, quantity, status: 200});
+    }
+    catch (error) {
+        console.log(error);
+        return res.status(500).send({message:"Internal server error", status: 500});
+    }
+};
+
+//get booked with highest quantity of services from all bookedservices in database in last week.
+exports.getBookedServiceWithHighestQuantityInLastWeek=async(req,res)=>{
+    try {
+        const lastweek = new Date(new Date().getTime() - 7 * 24 * 60 * 60 * 1000);
+        const bookedService=await Bookedservice.find({date:{$gte:lastweek}}).sort({quantity:-1}).limit(1);
+        if (!bookedService) {
+            return res.status(404).send({message:"Booked service not found", status: 404});
+        }
+        const quantity=bookedService[0].quantity;
+        const service=await Service.findById(bookedService[0].serviceid);
+        return res.status(200).send({service, quantity, status: 200});
+    }
+    catch (error) {
+        console.log(error);
+        return res.status(500).send({message:"Internal server error", status: 500});
+    }
+};
+
 
 

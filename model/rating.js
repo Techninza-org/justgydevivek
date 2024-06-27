@@ -9,6 +9,9 @@ const ratingschema=new mongoose.Schema({
     },
     vendorid:{
         type: String
+    },
+    serviceid:{
+        type: String
     }
 });
 

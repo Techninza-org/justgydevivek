@@ -4,7 +4,8 @@ const {getAll, addtocart, bookAllServicesInCart, detelteServiceFromCart, getCart
      updateQuantityOfServiceInCart,updateuser,deleteuser,getallservices, bookservice, myorders, setname,
     userhome, addaddress, getbycatergory, provideRating, getall, uploadimage, updateMobileAndEmail, cancelBookedService,
 addServiceToWishlist, deleteServiceFromWishlist, getAllServicesInWishlist,moveServiceFromWishlistToCart,
- getAllRatingsGivenByUser, getAllCategoriesWithIcon,getServiceByServiceId,addCoinsToUser,updateUser, getAllAddress} = require('../contoller/usercontroller');
+ getAllRatingsGivenByUser, getAllCategoriesWithIcon,getServiceByServiceId,addCoinsToUser,updateUser,
+  getAllAddress,getAllRatingByServiceIdAndVendorId, getBookedServiceWithHighestQuantity,getBookedServiceWithHighestQuantityInLastWeek} = require('../contoller/usercontroller');
 
 const {generateuserotp,resenduserotp,verifyuserotp} = require('../contoller/testotp');
 
@@ -13,13 +14,13 @@ router.get('/getalldetails',getAll);
 router.patch('/updatePassword',updateuser);
 router.patch('/update',updateUser);
 router.delete('/delete',deleteuser);
-router.post('/getallservices',getallservices);
+router.post('/getallservices',getallservices);  //by catergory
 router.post('/bookservice',bookservice);
-router.get('/myorder',myorders);
+router.get('/myorder',myorders);// get all booked services
 router.patch('/setname',setname);
 router.get('/home',userhome);
 router.post('/addaddress',addaddress);
-router.post('/getbycatergory',getbycatergory);
+router.post('/getbycatergory',getbycatergory); //get all services with rating and catergory
 router.post('/provideRating',provideRating);
 router.get('/getall',getall);
 router.patch('/uploadimage',uploadimage);
@@ -48,6 +49,9 @@ router.post('/getServiceByServiceId',getServiceByServiceId);
 
 router.post('/addCoinsToUser',addCoinsToUser);
 router.get('/getAllAddress',getAllAddress);
+router.post('/getAllRatingByServiceIdAndVendorId',getAllRatingByServiceIdAndVendorId);
+router.get('/trendingBookedService',getBookedServiceWithHighestQuantity);
+router.get('/trendingBookedServiceInLastWeek',getBookedServiceWithHighestQuantityInLastWeek);
 
 
 module.exports=router;
