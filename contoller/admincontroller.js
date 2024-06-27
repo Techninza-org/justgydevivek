@@ -474,9 +474,17 @@ exports.addCatergory=[upload.single('icon'),async(req,res)=>{
         if(req.role!=='Admin'){
             return res.status(401).json({message:'Unauthorized access you are not an admin',status:401});
         }
+        if(!req.file){
+            return res.status(400).json({message:'Icon is required, please upload it',status:400});
+        }
+
 
         const {catergorytype, startcolor, endcolor}=req.body;
         const icon={ path:  req.file.path };
+
+        if(!catergorytype || !startcolor || !endcolor){
+            return res.status(400).json({message:'Catergory type, start color and end color is required',status:400});
+        }
 
         const isAlreadyExist=await Catergory.findOne({ catergorytype: catergorytype });
         if(isAlreadyExist){
@@ -485,6 +493,7 @@ exports.addCatergory=[upload.single('icon'),async(req,res)=>{
         // if (startcolor.length !== 7 || endcolor.length !== 7 || !startcolor || !endcolor || !startcolor.startsWith('#') || !endcolor.startsWith('#')){
         //     return res.status(400).json({ message: 'invalid color, color should be start with # and must be length of 7 and color is mandatory to enter', status: 400 });
         // }
+
 
         const catergory=new Catergory({ catergorytype: catergorytype, catergoryicon: icon, startcolor: startcolor, endcolor: endcolor});
         await catergory.save();
@@ -510,12 +519,12 @@ exports.approveKycByVendorId=async(req,res)=>{
 
         const kyc=await Kyc.findOne({vendor:id});
         if(!kyc){
-            return res.status(400).json({message:'Kyc not found, may be kyc id is not valid',status:400});
+            return res.status(400).json({message:'Kyc not found, may be vendor id is not valid',status:400});
         }
 
         kyc.status='completed';
         await kyc.save();
-        return res.status(200).json({message:'Kyc approved successfully',status:200});
+        return res.status(200).json({message:'Kyc approved successfully', kyc, status:200});
     } catch (error) {
         console.log(error);
         return res.status(500).json({message:'Unable to approve kyc, may be vendor-Id is invalid',status:500});
@@ -536,7 +545,7 @@ exports.rejectKycByVendorId=async(req,res)=>{
 
         const kyc=await Kyc.findOne({vendor:id});
         if(!kyc){
-            return res.status(400).json({message:'Kyc not found, may be kyc id is not valid',status:400});
+            return res.status(400).json({message:'Kyc not found, may be vendor id is not valid',status:400});
         }
 
         kyc.status='rejected';
@@ -547,6 +556,23 @@ exports.rejectKycByVendorId=async(req,res)=>{
         return res.status(500).json({message:'Unable to reject kyc, may be vendor-Id is invalid',status:500});
     }
 };
+
+//create FAQ
+exports.createFAQ=async(req,res)=>{
+    try {
+        if (req.role !== 'Admin') {
+            return res.status(401).json({ message: 'Unauthorized access you are not an admin', status: 401 });
+        }
+        const {question,answer}=req.body;
+        const faq={question:question,answer:answer};
+        return res.status(200).json({message:'FAQ added successfully',status:200,faq:faq});
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({message:'Unable to add FAQ',status:500});
+    }
+};
+
+
 
 
 

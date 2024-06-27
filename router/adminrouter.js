@@ -3,11 +3,12 @@ const router = require('express').Router();
 const {createUser,createVendor,deleteVendorById,fetchAllServices,fetchAllUsers, fetchAllVendors, fetchAllBookedServices
     ,fetchAllAddresses,fetchAllKycs,fetchKycByVendorId,deleteUserById,fetchVendorById, addCatergory,
     approveKycByVendorId,rejectKycByVendorId,editUserById,editVendorById, fetchAllServicesByVendorEmail,
-     fetchServiceById, fetchUserById} = require('../contoller/admincontroller');
+     fetchServiceById, fetchUserById, createFAQ} = require('../contoller/admincontroller');
 
 //create
 router.post('/createUser',createUser);
 router.post('/createVendor',createVendor);
+router.post('/createFAQ',createFAQ);
 
 //delete by Id
 router.delete('/deleteVendorById/:id',deleteVendorById);
@@ -32,7 +33,7 @@ router.get('/fetchUserById/:id',fetchUserById);
 router.post('/addCatergory',addCatergory);
 
 //kyc
-router.patch('/approveKycByVendorId/:id',approveKycByVendorId);
+router.patch('/completeKycByVendorId/:id',approveKycByVendorId);
 router.patch('/rejectKycByVendorId/:id',rejectKycByVendorId);
 
 //edit by Id

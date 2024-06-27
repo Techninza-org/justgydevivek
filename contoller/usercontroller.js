@@ -51,8 +51,8 @@ exports.getAll=async (req,res)=>{
 
 exports.deleteuser=async (req,res)=>{
     try {
-        const currentvendoremail=req.email;
-        await User.deleteOne({email:currentvendoremail});
+        const currentemail=req.email;
+        await User.deleteOne({email:currentemail});
         return res.status(200).send({message:"deleted successfully", status: 200});
     } catch (error) {
         console.log(error);
@@ -174,7 +174,7 @@ exports.myorders= async (req,res)=>{
         //+++++++
         const listofallordersbyuserid=await Bookedservice.find({userid:userid /*, servicestatus: { $ne: "cancelled by user" }*/});
         //+++++++
-        
+
 
         return res.status(200).send({listofallordersbyuserid, status: 200});
     } catch (error) {
@@ -186,7 +186,7 @@ exports.myorders= async (req,res)=>{
 //update user's name
 exports.setname=async(req,res)=>{
     try {
-        currentuseremail=req.email;
+        const currentuseremail=req.email;
         const {name}=req.body;
         if (!name) {
             return res.status(400).send({message:"name variable is null", status: 400});

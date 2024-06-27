@@ -11,8 +11,14 @@ const SECRET_KEY = 'aaaaaaaaaaaaabbbbbbbbbbbbbbbbbcccccccccccccccccccc';
 exports.signup = async (req, res) => {
     try {
         const { email, password, mobile, name } = req.body;
+        
+        if (!mobile || !email) {
+            return res.status(400).send({ message: "mobile and email is required" });
+        }
+
         let isAlreadyExist = false;
         try {
+            // const user = await User.findOne({ email });
             const user = await User.findOne({ email });
             if (user) {
                 isAlreadyExist = true;
@@ -40,7 +46,7 @@ exports.signup = async (req, res) => {
             const user = new User({ name, mobile, email, password: hashedPassword, usercreationdate: new Date()});
             await user.save();
             delete user.password;
-            const token = jwt.sign({ email: user.email, role: user.role }, SECRET_KEY, { expiresIn: "7d" });
+            const token = jwt.sign({ email: user.email, role: user.role, mobile: user.mobile }, SECRET_KEY, { expiresIn: "7d" });
             return res.status(200).send({user: user, token: token, status: 200});
         });
     } catch (error) {
@@ -97,9 +103,10 @@ exports.vendorsignup = async (req, res) => {
 
 // User login
 exports.login = async (req, res) => {
-    const { email, password } = req.body;
+    const { email, password, mobile } = req.body;
     try {
-        const user = await User.findOne({ email });
+        // const user = await User.findOne({ email });
+        const user = await User.findOne({ mobile });
 
         if (!user) {
             return res.status(401).send({ message: "Invalid credentials" });
@@ -111,7 +118,7 @@ exports.login = async (req, res) => {
         }
 
         user.password = undefined; // Remove password from response
-        const token = jwt.sign({ email: user.email, role: user.role }, SECRET_KEY, { expiresIn: "7d" });
+        const token = jwt.sign({ email: user.email, role: user.role, mobile: user.mobile }, SECRET_KEY, { expiresIn: "7d" });
 
         return res.status(200).send({ user, token, status: 200 });
     } catch (err) {
@@ -151,6 +158,10 @@ exports.vendorlogin = async (req, res) => {
 exports.adminsignup = async (req, res) => {
     try {
         const { email, password, name, mobile } = req.body;
+
+        if (!email || !password) {
+            return res.status(400).send({ message: "email and passowrd are required" });
+        }
         let isAlreadyExist = false;
         try {
             const admin = await Admin.findOne({ email });
