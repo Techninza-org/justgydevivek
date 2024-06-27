@@ -4,6 +4,27 @@ const addresschema=new mongoose.Schema({
     houseno:{
         type: String
     },
+    name:{
+        type: String
+    },
+    mobile:{
+        type: Number
+    },
+    city:{
+        type: String
+    },
+    state:{
+        type: String
+    },
+    country:{
+        type: String
+    },
+    area_street:{
+        type: String
+    },
+    sector_area:{
+        type: String
+    },
     lineone:{
         type: String
     },

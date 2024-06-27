@@ -429,15 +429,15 @@ exports.addaddress=async(req,res)=>{
             return res.status(400).send({message:"you are not a vendor", status: 400});
         }
 
-        const {houseno, lineone, linetwo, linethree, landmark, pincode, longitude, latitude}=req.body;
+        const {houseno, lineone, linetwo, linethree, landmark, pincode, longitude, latitude, city, name, state, country, area_street, sector_area, mobile}=req.body;
         const currentemail=req.email;
         const vendor=await Vendor.findOne({email:currentemail});
         if (!vendor) {
             return res.status(400).send({message:"vendor not found", status: 400});
         }
-        const address=new Address({houseno, lineone, linetwo, linethree, landmark, pincode, longitude, latitude, vendorid:vendor._id});
+        const address=new Address({houseno, lineone, linetwo, linethree, landmark, pincode, longitude, latitude, vendorid:vendor._id, city:city, name:name, state:state, country:country, area_street:area_street, sector_area:sector_area, mobile:mobile});
         await address.save();
-        return res.status(200).send({message:"address added successfully", status: 200});
+        return res.status(200).send({message:"address added successfully", address,status: 200});
     } catch (error) {
         console.log(error);
         return res.status(500).send({message: "Error occured in try block please check console to see error", status: 500});

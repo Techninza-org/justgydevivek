@@ -223,7 +223,7 @@ exports.addaddress=async(req,res)=>{
         const userid=userbyuseremail._id;
         const address=req.body;
         const {latitute, longitude}=req.body;
-        const newaddress=new Address({userid:userid, houseno:address.houseno, lineone:address.lineone, linetwo:address.linetwo, linethree:address.linethree, landmark:address.landmark, pincode:address.pincode});
+        const newaddress=new Address({userid:userid, houseno:address.houseno, lineone:address.lineone, linetwo:address.linetwo, linethree:address.linethree, landmark:address.landmark, pincode:address.pincode, area_street:address.area_street, city: address.city, country: address.country, name: address.name, mobile: address.mobile, sector_area: address.sector_area, state: address.state});
         
         if (latitute) {
             newaddress.latitude=latitute;
@@ -241,7 +241,7 @@ exports.addaddress=async(req,res)=>{
     }
 };
 
-//get by catergory
+//get all services by catergory
 exports.getbycatergory=async(req,res)=>{
     try {
         const {catergory}=req.body;
@@ -349,12 +349,16 @@ exports.getCartServicesFromCurrentUser=async(req,res)=>{
     try {
         const currentuseremail=req.email;
         const user=await User.findOne({email:currentuseremail});
+
+        //get all services in cart of current user
         const cartList=await Cart.find({userid:user._id});
         let services=[];
         for (let i=0;i<cartList.length;i++){
             const serviceid=cartList[i].serviceid;
+
+            //get service by service's id of current user's cart
             const servicebyid=await Service.findById(serviceid);
-            services.push(servicebyid, {quantity : cartList[i].quantity}, {cart: cartList[i]});
+            services.push({servicebyid, quantity : cartList[i].quantity, cartid: cartList[i]._id});
         }
 
 
@@ -764,3 +768,5 @@ exports.getAllAddress=async(req,res)=>{
         return res.status(500).send({message:"Internal server error", status: 500});
     }
 };
+
+
