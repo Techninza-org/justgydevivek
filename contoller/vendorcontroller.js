@@ -217,7 +217,7 @@ exports.orderrequests=async(req,res)=>{
         const currentemail=req.email;
         const currentvendor=await Vendor.findOne({email:currentemail});
         const vendorid=currentvendor._id;
-        const listofallordersbyvendorid=await Bookedservice.find({vendorid:vendorid, servicestatus:"payment is done waiting for vendor to accept the service"});
+        const listofallordersbyvendorid=await Bookedservice.find({vendorid:vendorid, servicestatus:"PLACED"});
         return res.status(200).send({listofallordersbyvendorid, status: 200});
     }
     catch (error) {

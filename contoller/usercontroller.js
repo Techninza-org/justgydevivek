@@ -354,7 +354,7 @@ exports.getCartServicesFromCurrentUser=async(req,res)=>{
         for (let i=0;i<cartList.length;i++){
             const serviceid=cartList[i].serviceid;
             const servicebyid=await Service.findById(serviceid);
-            services.push(servicebyid, {quantity : cartList[i].quantity});
+            services.push(servicebyid, {quantity : cartList[i].quantity}, {cart: cartList[i]});
         }
 
 
