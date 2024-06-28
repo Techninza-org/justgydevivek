@@ -32,6 +32,9 @@ const kycschema=new mongoose.Schema({
     submitted:{
         type: Boolean,
         default: false
+    },
+    mobile:{
+        type: Number
     }
 });
 

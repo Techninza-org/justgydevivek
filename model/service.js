@@ -24,6 +24,9 @@ const serviceschema=new mongoose.Schema({
     vendoremail:{
         type: String
     },
+    vendoreMobile:{
+        type: Number
+    },
     address:{
         type: Address.schema
     },
@@ -33,6 +36,10 @@ const serviceschema=new mongoose.Schema({
     discount:{
         type: Number,
         default: 0
+    },
+    date:{
+        type: Date,
+        default: Date.now
     }
 });
 

@@ -25,6 +25,7 @@ exports.middleware=async(req,res,next)=>{
         // console.log(decoded.role);
         req.email=email;
         req.role=decoded.role;
+        req.mobile=decoded.mobile;
         next();
     });
 };

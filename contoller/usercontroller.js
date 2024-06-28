@@ -9,10 +9,12 @@ const Bookedservice=require('../model/bookedservice');
 const bcrypt = require('bcrypt');
 const Catergory=require('../model/catergory');
 const jwt = require('jsonwebtoken');
+const Faq=require('../model/faq');
 
 const path = require('path');
 const multer = require('multer');
 const { stat } = require('fs');
+const { log } = require('console');
 
 const SALT_ROUND=10;
 const SECRET_KEY = 'aaaaaaaaaaaaabbbbbbbbbbbbbbbbbcccccccccccccccccccc';
@@ -34,8 +36,10 @@ const storage = multer.diskStorage({
 //get all details of current user
 exports.getAll=async (req,res)=>{
     try {
-        const email=req.email;
-        const currentuserdetails=await User.findOne({email:email});
+        // const email=req.email;
+        const mobile=req.mobile;
+        // const currentuserdetails=await User.findOne({email:email});
+        const currentuserdetails=await User.findOne({mobile:mobile});
         if(currentuserdetails){
             return res.status(200).send({currentuserdetails, status: 200});
         }else{
@@ -51,8 +55,9 @@ exports.getAll=async (req,res)=>{
 
 exports.deleteuser=async (req,res)=>{
     try {
-        const currentemail=req.email;
-        await User.deleteOne({email:currentemail});
+        // const currentemail=req.email;
+        const currentMobile=req.mobile;
+        await User.deleteOne({mobile:currentMobile});
         return res.status(200).send({message:"deleted successfully", status: 200});
     } catch (error) {
         console.log(error);
@@ -64,8 +69,10 @@ exports.deleteuser=async (req,res)=>{
 exports.updateuser=async(req,res)=>{
     try {
         const {password}=req.body;
-        const currentuseremail=req.email;
-        const user=await User.findOne({email:currentuseremail});
+        // const currentuseremail=req.email;
+        const currentMobile=req.mobile;
+        // const user=await User.findOne({email:currentuseremail});
+        const user=await User.findOne({mobile:currentMobile});
 
         if (!password) {
             return res.status(400).send({message:"password variable is null", status: 400});
@@ -108,9 +115,14 @@ exports.getallservices=async(req,res)=>{
 //book service by user
 exports.bookservice=async(req,res)=>{
     try {
-        const currentuseremail=req.email;
+        // const currentuseremail=req.email;
+        const currentMobile=req.mobile;
         // const serv=req.body;
         const {quantity, addressid, coinsused}=req.body;
+        if (!quantity || !addressid || !coinsused) {
+            return res.status(400).send({message:"quantity, addressid, coinused is required", status: 400});
+        }
+
         const {serviceid}=req.body;
         if (!serviceid) {
             return res.status(400).send({message:"serviceid is required", status: 400});
@@ -127,8 +139,14 @@ exports.bookservice=async(req,res)=>{
         // }
         
         //get vendor by vendoremail (it is available in service model).
-        const vendorbyvendoremail=await Vendor.findOne({email:servicebyId.vendoremail});
-        const userbyuseremail=await User.findOne({email:currentuseremail});
+        // const vendorbyvendoremail=await Vendor.findOne({email:servicebyId.vendoremail});
+        const vendorbyvendoremail=await Vendor.findOne({mobile:servicebyId.vendoreMobile});
+
+
+
+
+        // const userbyuseremail=await User.findOne({email:currentuseremail});
+        const userbyuseremail=await User.findOne({mobile:currentMobile});
 
         // const serviceid=serv._id;
         const vendorid=vendorbyvendoremail._id;
@@ -166,8 +184,10 @@ exports.bookservice=async(req,res)=>{
 //all booked services by user
 exports.myorders= async (req,res)=>{
     try {
-        const currentuseremail=req.email;
-        const userbyuseremail=await User.findOne({email:currentuseremail});
+        // const currentuseremail=req.email;
+        const currentMobile=req.mobile;
+        // const userbyuseremail=await User.findOne({email:currentuseremail});
+        const userbyuseremail=await User.findOne({mobile:currentMobile});
         const userid=userbyuseremail?._id;  //changed '?'
 
         // const listofallordersbyuserid=await Bookedservice.find({userid:userid});
@@ -186,15 +206,16 @@ exports.myorders= async (req,res)=>{
 //update user's name
 exports.setname=async(req,res)=>{
     try {
-        const currentuseremail=req.email;
+        // const currentuseremail=req.email;
+        const currentMobile=req.mobile;
         const {name}=req.body;
         if (!name) {
             return res.status(400).send({message:"name variable is null", status: 400});
         }
-        const userbyuseremail=await User.findOne({email:currentuseremail});
-        userbyuseremail.name=name;
-        await userbyuseremail.save();
-        return res.status(200).send({userbyuseremail, status: 200});
+        const user=await User.findOne({mobile:currentMobile});
+        user.name=name;
+        await user.save();
+        return res.status(200).send({user, status: 200});
     } catch (error) {
         console.log(error);
         return res.status(500).send({message:"error occured in try block please check cosole to see error", status: 500});
@@ -205,8 +226,10 @@ exports.setname=async(req,res)=>{
 //user home
 exports.userhome=async(req,res)=>{
     try {
-        const currentuseremail=req.email;
-        const userbyuseremail=await User.findOne({email:currentuseremail});
+        // const currentuseremail=req.email;
+        const currentMobile=req.mobile;
+        // const userbyuseremail=await User.findOne({email:currentuseremail});
+        const userbyuseremail=await User.findOne({mobile:currentMobile});
         const userid=userbyuseremail._id;
         const addressbyuserid=await Address.find({userid:userid});
         return res.status(200).send({userbyuseremail, addressbyuserid, status: 200});
@@ -220,8 +243,10 @@ exports.userhome=async(req,res)=>{
 exports.addaddress=async(req,res)=>{
     try {
 
-        const currentuseremail=req.email;
-        const userbyuseremail=await User.findOne({email:currentuseremail});
+        // const currentuseremail=req.email;
+        const currentMobile=req.mobile;
+        // const userbyuseremail=await User.findOne({email:currentuseremail});
+        const userbyuseremail=await User.findOne({mobile:currentMobile});
         const userid=userbyuseremail._id;
         const address=req.body;
         const {latitute, longitude}=req.body;
@@ -284,16 +309,22 @@ exports.getbycatergory=async(req,res)=>{
 //provide rating to vendor
 exports.provideRating=async(req,res)=>{
     try {
-        const currentuseremail=req.email;
-        const userbyuseremail=await User.findOne({email:currentuseremail});
+        // const currentuseremail=req.email;
+        const currentMobile=req.mobile;
+        // const userbyuseremail=await User.findOne({email:currentuseremail});
+        const userbyuseremail=await User.findOne({mobile:currentMobile});
         const userid=userbyuseremail._id
-        const {rating , vendoremail, serviceid}=req.body;
+        const {rating , vendoremail, serviceid, vendoreMobile}=req.body;
+        if (!rating || !vendoreMobile || !serviceid) {
+            return res.status(400).send({message:"rating, vendoremail and serviceid is required", status: 400});
+        }
 
         if (rating>5 || rating<0) {
             return res.status(400).send({message:"rating should be between 0 and 5", status: 400});
         }
 
-        const vendorbyvendoremail=await Vendor.findOne({email:vendoremail});
+        // const vendorbyvendoremail=await Vendor.findOne({email:vendoremail});
+        const vendorbyvendoremail=await Vendor.findOne({mobile:vendoreMobile});
         const vendorid=vendorbyvendoremail._id;
         const newrating=new Rating({rating:rating, vendorid:vendorid, userid:userid, serviceid:serviceid});
         await newrating.save();
@@ -319,8 +350,10 @@ exports.getall=async(req,res)=>{
 //upload user image
 exports.uploadimage=[upload.single('image'),async(req,res)=>{
     try {
-        const currentuseremail=req.email;
-        const userbyuseremail=await User.findOne({email:currentuseremail});
+        // const currentuseremail=req.email;
+        const currentMobile=req.mobile;
+        // const userbyuseremail=await User.findOne({email:currentuseremail});
+        const userbyuseremail=await User.findOne({mobile:currentMobile});
         
         const image = { path: req.file.path };
         if (!image) {
@@ -338,14 +371,16 @@ exports.uploadimage=[upload.single('image'),async(req,res)=>{
 //adding service to cart
 exports.addtocart=async(req,res)=>{
     try {
-        const currentuseremail=req.email;
+        // const currentuseremail=req.email;
+        const currentMobile=req.mobile;
         const {serviceid, quantity}=req.body;
         
         if (!serviceid || !quantity) {
             return res.status(400).send({message:"serviceid and quantity is required", status: 400});
         }
 
-        const user=await User.findOne({email:currentuseremail});
+        // const user=await User.findOne({email:currentuseremail});
+        const user=await User.findOne({mobile:currentMobile});
         const service=await Service.findById(serviceid);
         if (!service) {
             return res.status(400).send({message:"service not found please enter a valid serviceid", status: 400});
@@ -375,8 +410,13 @@ exports.addtocart=async(req,res)=>{
 //get all services in cart by current user
 exports.getCartServicesFromCurrentUser=async(req,res)=>{
     try {
-        const currentuseremail=req.email;
-        const user=await User.findOne({email:currentuseremail});
+        if(req.role!=="User"){
+            return res.status(403).send({message:"You are not a User", status: 403});
+        }
+        // const currentuseremail=req.email;
+        const currentMobile=req.mobile;
+        // const user=await User.findOne({email:currentuseremail});
+        const user=await User.findOne({mobile:currentMobile});
 
         //get all services in cart of current user
         const cartList=await Cart.find({userid:user._id});
@@ -386,7 +426,18 @@ exports.getCartServicesFromCurrentUser=async(req,res)=>{
 
             //get service by service's id of current user's cart
             const servicebyid=await Service.findById(serviceid);
-            services.push({servicebyid, quantity : cartList[i].quantity, cartid: cartList[i]._id});
+            if (!servicebyid) {
+                return res.status(400).send({message:"Service not found by this id", status: 400});
+            }
+
+            //find vendor of this service by vendoreMobile
+            const vendor=await Vendor.findOne({mobile:servicebyid.vendoreMobile});
+
+            //get total number of rating of this service by serviceid and vendorid
+            const totalrating=await Rating.find({serviceid:serviceid, vendorid:vendor._id}).countDocuments();
+
+
+            services.push({servicebyid, quantity : cartList[i].quantity, cartid: cartList[i]._id, totalrating});
         }
 
 
@@ -400,13 +451,17 @@ exports.getCartServicesFromCurrentUser=async(req,res)=>{
 //book all services in cart
 exports.bookAllServicesInCart=async(req,res)=>{
     try {
-        const currentemail=req.email;
+        // const currentemail=req.email;
+        const currentMobile=req.mobile;
         const {addressid, usedcoins}=req.body;
+        
         // const addressbyid=await Address.findById(addressid);
         // if (!addressbyid) {
         //     return res.status(400).send({message:"Address id not found", status: 400});
         // }
-        const user=await User.findOne({email:currentemail});
+
+        // const user=await User.findOne({email:currentemail});
+        const user=await User.findOne({mobile:currentMobile});
         const cartList=await Cart.find({userid:user._id});
         console.log(cartList);
         let currentBookedServices=[];
@@ -415,7 +470,10 @@ exports.bookAllServicesInCart=async(req,res)=>{
             const serviceid=cart.serviceid;
             const userid=user._id;
             const service=await Service.findById(serviceid);
-            const vendorid=service.vendorid;
+            // const vendorByEmail=await Vendor.findOne({email:service.vendoremail});
+            const vendorByEmail=await Vendor.findOne({mobile:service.vendoreMobile});
+
+            const vendorid=vendorByEmail._id;
             const newbookeservice=new Bookedservice({serviceid,userid,vendorid, date: new Date()});
             newbookeservice.servicestatus="PLACED";
 
@@ -482,9 +540,11 @@ exports.updateQuantityOfServiceInCart=async(req,res)=>{
 //update mobile and email
 exports.updateMobileAndEmail=async(req,res)=>{
     try {
-        const currentemail=req.email;
+        // const currentemail=req.email;
+        const currentMobile=req.mobile;
         const {mobile, email}=req.body;
-        const user=await User.findOne({email:currentemail});
+        // const user=await User.findOne({email:currentemail});
+        const user=await User.findOne({mobile:currentMobile});
 
         if(!user){
             return res.status(404).send({message:"User not found", status: 404});
@@ -499,7 +559,7 @@ exports.updateMobileAndEmail=async(req,res)=>{
 
         await user.save();
 
-        const token = jwt.sign({ email: user.email, role: user.role }, SECRET_KEY, { expiresIn: "7d" });
+        const token = jwt.sign({ email: user.email, role: user.role, mobile: user.mobile }, SECRET_KEY, { expiresIn: "7d" });
 
         return res.status(200).send({user, token, status: 200});
     }
@@ -526,9 +586,14 @@ exports.cancelBookedService=async(req,res)=>{
 //add service to wishlist
 exports.addServiceToWishlist=async(req,res)=>{
     try {
-        const currentemail=req.email;
+        // const currentemail=req.email;
+        const currentMobile=req.mobile;
         const {serviceid}=req.body;
-        const user=await User.findOne({email:currentemail});
+        // const user=await User.findOne({email:currentemail});
+        const user=await User.findOne({mobile:currentMobile});
+        if(!user){
+            return res.status(404).send({message:"User not found by this mobile", status: 404});
+        }
         const userid=user._id;
         const service=await Service.findById(serviceid);
         if (!service) {
@@ -555,8 +620,11 @@ exports.addServiceToWishlist=async(req,res)=>{
 //get all services in wishlist of current user
 exports.getAllServicesInWishlist=async(req,res)=>{
     try {
-        const currentemail=req.email;
-        const user=await User.findOne({email:currentemail});
+        // const currentemail=req.email;
+        const currentMobile=req.mobile;
+        // const user=await User.findOne({email:currentemail});
+        const user=await User.findOne({mobile:currentMobile});
+
         const wishlistList=await Wishlist.find({userid:user._id});
         return res.status(200).send({wishlistList, status: 200});
     }
@@ -595,8 +663,10 @@ exports.moveServiceFromWishlistToCart=async(req,res)=>{
         if (!wishlist) {
             return res.status(400).send({message:"Wishlist not found, wishlistId is invalid", status: 400});
         }
-        const currentemail=req.email;
-        const user=await User.findOne({email:currentemail});
+        // const currentemail=req.email;
+        const currentMobile=req.mobile;
+        // const user=await User.findOne({email:currentemail});
+        const user=await User.findOne({mobile:currentMobile});
         const cart=new Cart({serviceid:wishlist.serviceid, quantity:1, userid:user._id, servicename: wishlist.servicename});
         cart.servicecatergory=wishlist.servicecatergory;
         await cart.save();
@@ -612,8 +682,10 @@ exports.moveServiceFromWishlistToCart=async(req,res)=>{
 //get all ratings given by user
 exports.getAllRatingsGivenByUser=async(req,res)=>{
     try {
-        const currentemail=req.email;
-        const user=await User.findOne({email:currentemail});
+        // const currentemail=req.email;
+        const currentMobile=req.mobile;
+        // const user=await User.findOne({email:currentemail});
+        const user=await User.findOne({mobile:currentMobile});
         const ratingList=await Rating.find({userid:user._id});
         return res.status(200).send({ratingList, status: 200});
     }
@@ -689,7 +761,8 @@ exports.getServiceByServiceId=async(req,res)=>{
             return res.status(404).send({message:"Service not found", status: 404});
         }
 
-        const vendor=await Vendor.findOne({email:service.vendoremail});
+        // const vendor=await Vendor.findOne({email:service.vendoremail});
+        const vendor=await Vendor.findOne({mobile:service.vendoreMobile});
         
         const vendorid=vendor._id;
         const ratingList=await Rating.find({vendorid:vendorid});
@@ -719,8 +792,10 @@ exports.addCoinsToUser=async(req,res)=>{
             return res.status(403).send({message:"your are not a User", status: 403});
         }
         const {coins}=req.body;
-        const currentemail=req.email;
-        const user=await User.findOne({email:currentemail});
+        // const currentemail=req.email;
+        const currentMobile=req.mobile;
+        // const user=await User.findOne({email:currentemail});
+        const user=await User.findOne({mobile:currentMobile});
         if (coins<0 || !coins) {
             return res.status(400).send({message:"coins should be greater than 0 , or please enter coins", status: 400});
         }
@@ -741,9 +816,11 @@ exports.updateUser=[upload.single('image'), async(req,res)=>{
             return res.status(403).send({message:"your are not a User", status: 403});
         }
         const {name, email, mobile}=req.body;
-        const currentemail=req.email;
+        // const currentemail=req.email;
+        const currentMobile=req.mobile;
         
-        const user=await User.findOne({email:currentemail});
+        // const user=await User.findOne({email:currentemail});
+        const user=await User.findOne({mobile:currentMobile});
         
         if (name) {
             user.name=name;
@@ -786,8 +863,10 @@ exports.getAllAddress=async(req,res)=>{
         if(req.role!=="User"){
             return res.status(403).send({message:"your are not a User", status: 403});
         }
-        const currentemail=req.email;
-        const user=await User.findOne({email:currentemail});
+        // const currentemail=req.email;
+        const currentMobile=req.mobile;
+        // const user=await User.findOne({email:currentemail});
+        const user=await User.findOne({mobile:currentMobile});
         const addressList=await Address.find({userid:user._id});
         return res.status(200).send({addressList, status: 200});
     }
@@ -800,11 +879,14 @@ exports.getAllAddress=async(req,res)=>{
 //get all rating of by serviceid and vendorid
 exports.getAllRatingByServiceIdAndVendorId=async(req,res)=>{
     try {
-        const {serviceid, vendoremail}=req.body;
-        if (!serviceid || !vendoremail) {
+        // const {serviceid, vendoremail}=req.body;
+        const {serviceid, vendoreMobile}=req.body;
+        // if (!serviceid || !vendoremail) {
+        if (!serviceid || !vendoreMobile) {
             return res.status(400).send({message:"serviceid and vendoremail is required", status: 400});
         }
-        const vendor=await Vendor.findOne({email:vendoremail});
+        // const vendor=await Vendor.findOne({email:vendoremail});
+        const vendor=await Vendor.findOne({mobile:vendoreMobile});
         const vendorid=vendor._id;
         const ratingList=await Rating.find({serviceid:serviceid, vendorid:vendorid});
         return res.status(200).send({ratingList, status: 200});
@@ -855,6 +937,19 @@ exports.getBookedServiceWithHighestQuantityInLastWeek=async(req,res)=>{
         return res.status(500).send({message:"Internal server error", status: 500});
     }
 };
+
+//get all Faqs
+exports.getAllFaqs=async(req,res)=>{
+    try {
+        const faqList=await Faq.find({});
+        return res.status(200).send({faqList, status: 200});
+    }
+    catch (error) {
+        console.log(error);
+        return res.status(500).send({message:"Internal server error", status: 500});
+    }
+};
+
 
 
 

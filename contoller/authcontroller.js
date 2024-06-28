@@ -18,8 +18,8 @@ exports.signup = async (req, res) => {
 
         let isAlreadyExist = false;
         try {
-            // const user = await User.findOne({ email });
             const user = await User.findOne({ email });
+            // const user = await User.findOne({ mobile });
             if (user) {
                 isAlreadyExist = true;
             }
@@ -59,6 +59,10 @@ exports.signup = async (req, res) => {
 exports.vendorsignup = async (req, res) => {
     try {
         const { email, password, name, mobile } = req.body;
+        if(!mobile || !password){
+            return res.status(400).send({ message: "mobile and password is required" });
+        }
+
         let isAlreadyExist = false;
         try {
             const user = await Vendor.findOne({ email });
@@ -92,7 +96,7 @@ exports.vendorsignup = async (req, res) => {
             await user.save();
             // user.password = undefined; // Remove password from response
             delete user.password;
-            const token = jwt.sign({ email: user.email, role: user.role }, SECRET_KEY, { expiresIn: "7d" });
+            const token = jwt.sign({ email: user.email, role: user.role, mobile: user.mobile }, SECRET_KEY, { expiresIn: "7d" });
             return res.status(200).send({user: user, token: token, status: 200});
         });
     } catch (error) {
@@ -129,9 +133,10 @@ exports.login = async (req, res) => {
 
 // Vendor login
 exports.vendorlogin = async (req, res) => {
-    const { email, password } = req.body;
+    const { email, password, mobile } = req.body;
     try {
-        const vendor = await Vendor.findOne({ email });
+        // const vendor = await Vendor.findOne({ email });
+        const vendor = await Vendor.findOne({ mobile });
 
         if (!vendor) {
             return res.status(401).send({ message: "Invalid credentials" });
@@ -143,7 +148,7 @@ exports.vendorlogin = async (req, res) => {
         }
 
         vendor.password = undefined; // Remove password from response
-        const token = jwt.sign({ email: vendor.email, role: vendor.role }, SECRET_KEY, { expiresIn: "7d" });
+        const token = jwt.sign({ email: vendor.email, role: vendor.role, mobile: vendor.mobile }, SECRET_KEY, { expiresIn: "7d" });
 
         return res.status(200).send({ vendor, token, status: 200});
     } catch (err) {

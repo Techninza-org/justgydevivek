@@ -9,6 +9,7 @@ const bcrypt = require('bcrypt');
 const path = require('path');
 const multer = require('multer');
 const Catergory=require('../model/catergory');
+const { log } = require('node:console');
 
 const SALT_ROUND=10;
 const SECRET_KEY = 'aaaaaaaaaaaaabbbbbbbbbbbbbbbbbcccccccccccccccccccc';
@@ -37,8 +38,10 @@ exports.addservicebyvendor=[upload.array('images', 10), async(req,res)=>{
         if(req.role!=='Vendor'){
             return res.status(400).send({message:"you are not a vendor", status: 400});
         }
+        const currentMobile=req.mobile;
+        console.log(currentMobile);
 
-        const vendoremail=req.email;
+        // const vendoremail=req.email;
         const {servicename, title, catergory, servicedescription, price, address, servicerange, discount}=req.body;
 
         //+++++++++++++++++++++++++++++++++++++
@@ -74,7 +77,9 @@ exports.addservicebyvendor=[upload.array('images', 10), async(req,res)=>{
         }
 
         const newservice=new Service({servicename, title, catergory, servicedescription, price, image: images, address, servicerange});
-        newservice.vendoremail=vendoremail;
+        // newservice.vendoremail=vendoremail;
+        newservice.vendoreMobile=req.mobile;
+        console.log(newservice.vendoreMobile);
 
         if(discount || discount>=0 && discount<=100){
             discount=Math.round(discount);
@@ -95,8 +100,12 @@ exports.addservicebyvendor=[upload.array('images', 10), async(req,res)=>{
 //get all service of vendor
 exports.allservices=async(req,res)=>{
     try {
-        const vendoremail=req.email;
-        const listofservices=await Service.find({vendoremail:vendoremail});
+        // const vendoremail=req.email;
+        const vendorMobile=req.mobile;
+        console.log(vendorMobile);
+        console.log(req);
+        // const listofservices=await Service.find({vendoremail:vendoremail});
+        const listofservices=await Service.find({vendoreMobile:vendorMobile});
         return res.status(200).send({listofservices, status: 200});
     } catch (error) {
         console.log(error);
@@ -108,8 +117,10 @@ exports.allservices=async(req,res)=>{
 exports.updatevendor=async(req,res)=>{
     try {
         const {name,password}=req.body;
-        const currentvendoremail=req.email;
-        const vendor=await Vendor.findOne({email:currentvendoremail});
+        // const currentvendoremail=req.email;
+        const currentMobile=req.mobile;
+        // const vendor=await Vendor.findOne({email:currentvendoremail});
+        const vendor=await Vendor.findOne({mobile:currentMobile});
 
         bcrypt.hash(password, SALT_ROUND, async (err, hashedPassword) => {
             if (err) {
@@ -139,10 +150,57 @@ exports.updatevendor=async(req,res)=>{
 //get all details of current vendor
 exports.getAll=async (req,res)=>{
     try {
-        const email=req.email;
-        const currentvendordetails=await Vendor.findOne({email:email});
+        // const email=req.email;
+        if(req.role!=='Vendor'){
+            return res.status(400).send({message:"you are not a vendor", status: 400});
+        }
+        const currentMobile=req.mobile;
+        // const currentvendordetails=await Vendor.findOne({email:email});
+        const currentvendordetails=await Vendor.findOne({mobile:currentMobile});
+
+        //get price of total of all booked services havind status completed
+        const vendorid=currentvendordetails._id;
+        const listofallordersbyvendorid=await Bookedservice.find({vendorid:vendorid, servicestatus:"completed"});
+        let totalprice=0;
+        listofallordersbyvendorid.forEach((order)=>{
+            totalprice+=order.price;
+        });
+
+        //total average rating of vendor by vendorid
+        const listofallratings=await Rating.find({vendorid:vendorid});
+        let totalrating=0;
+        listofallratings.forEach((rating)=>{
+            totalrating+=rating.rating;
+        });
+        //total number of ratings
+        totalNumberOfRatings=listofallratings.length;
+
+        //doing average of all ratings
+        totalrating=totalrating/listofallratings.length;
+
+        //get current kyc status of vendor
+        const kycdetails=await kyc.findOne({vendorid:vendorid});
+        const kycStatus="kyc not submitted by vendor";
+        if(kycdetails){
+            kycStatus=kycdetails.status;
+        }
+
+        //get total order per per month which have status completed
+        const date=new Date();
+        const month=date.getMonth();
+        const year=date.getFullYear();
+        const listofallordersbyvendoridpermonth=await Bookedservice.find({vendorid:vendorid, servicestatus:"completed"});
+        let totalorderpermonth=0;
+        listofallordersbyvendoridpermonth.forEach((order)=>{
+            if(order.date.getMonth()===month && order.date.getFullYear()===year){
+                totalorderpermonth+=1;
+            }
+        });
+
+
+
         if(currentvendordetails){
-            return res.status(200).send(currentvendordetails);
+            return res.status(200).send({currentvendordetails, totalIncome:totalprice, totalrating, kycStatus, totalorderpermonth, totalNumberOfRatings,status: 200});
         }else{
             return res.status(404).send({message:"vendor not found", status: 404});
         }
@@ -156,8 +214,10 @@ exports.getAll=async (req,res)=>{
 //delete current vendor
 exports.deletevendor=async (req,res)=>{
     try {
-        const currentvendoremail=req.email;
-        await Vendor.deleteOne({email:currentvendoremail});
+        // const currentvendoremail=req.email;
+        const currentMobile=req.mobile;
+        // await Vendor.deleteOne({email:currentvendoremail});
+        await Vendor.deleteOne({mobile:currentMobile});
         return res.status(200).send({message:"deleted successfully", status: 200});
     } catch (error) {
         console.log(error);
@@ -168,8 +228,10 @@ exports.deletevendor=async (req,res)=>{
 //accept order
 exports.acceptorder=async(req,res)=>{
     try {
-        const currentemail=req.email;
-        const currentvendor=await Vendor.findOne({email:currentemail});
+        // const currentemail=req.email;
+        const currentMobile=req.mobile;
+        // const currentvendor=await Vendor.findOne({email:currentemail});
+        const currentvendor=await Vendor.findOne({mobile:currentMobile});
         if (!currentvendor) {
             return res.status(400).send({message:"your are not a vendor", status: 400});
         }
@@ -191,8 +253,10 @@ exports.acceptorder=async(req,res)=>{
 //reject order
 exports.rejectorder=async(req,res)=>{
     try {
-        const currentemail=req.email;
-        const currentvendor=await Vendor.findOne({email:currentemail});
+        // const currentemail=req.email;
+        const currentMobile=req.mobile;
+        // const currentvendor=await Vendor.findOne({email:currentemail});
+        const currentvendor=await Vendor.findOne({mobile:currentMobile});
         if (!currentvendor) {
             return res.status(400).send({message:"your are not a vendor", status: 400});
         }
@@ -214,8 +278,10 @@ exports.rejectorder=async(req,res)=>{
 //order requests
 exports.orderrequests=async(req,res)=>{
     try {
-        const currentemail=req.email;
-        const currentvendor=await Vendor.findOne({email:currentemail});
+        // const currentemail=req.email;
+        const currentMobile=req.mobile;
+        // const currentvendor=await Vendor.findOne({email:currentemail});
+        const currentvendor=await Vendor.findOne({mobile:currentMobile});
         const vendorid=currentvendor._id;
         const listofallordersbyvendorid=await Bookedservice.find({vendorid:vendorid, servicestatus:"PLACED"});
         return res.status(200).send({listofallordersbyvendorid, status: 200});
@@ -229,8 +295,10 @@ exports.orderrequests=async(req,res)=>{
 //total completed orders
 exports.totalorders=async(req,res)=>{
     try {
-        const currentemail=req.email;
-        const currentvendor=await Vendor.findOne({email:currentemail});
+        // const currentemail=req.email;
+        const currentMobile=req.mobile;
+        // const currentvendor=await Vendor.findOne({email:currentemail});
+        const currentvendor=await Vendor.findOne({mobile:currentMobile});
         const vendorid=currentvendor._id;
         console.log(vendorid);
         const listofallordersbyvendorid=await Bookedservice.find({vendorid:vendorid, servicestatus:"completed"});
@@ -245,8 +313,10 @@ exports.totalorders=async(req,res)=>{
 //get all ratings of vendor
 exports.getallratings=async(req,res)=>{
     try {
-        const currentemail=req.email;
-        const currentvendor=await Vendor.findOne({email:currentemail});
+        // const currentemail=req.email;
+        const currentMobile=req.mobile;
+        // const currentvendor=await Vendor.findOne({email:currentemail});
+        const currentvendor=await Vendor.findOne({mobile:currentMobile});
         const vendorid=currentvendor._id;
         const listofallratings=await Rating.find({vendorid:vendorid});
         return res.status(200).send({listofallratings, status: 200});
@@ -260,8 +330,10 @@ exports.getallratings=async(req,res)=>{
 //booked service completed
 exports.completed=async(req,res)=>{
     try {
-        const currentemail=req.email;
-        const currentvendor=await Vendor.findOne({email:currentemail});
+        // const currentemail=req.email;
+        const currentMobile=req.mobile;
+        // const currentvendor=await Vendor.findOne({email:currentemail});
+        const currentvendor=await Vendor.findOne({mobile:currentMobile});
         if (!currentvendor) {
             return res.status(400).send({message:"your are not a vendor", status: 400});
         }
@@ -283,8 +355,10 @@ exports.completed=async(req,res)=>{
 //get all live orders
 exports.liveOrders=async(req,res)=>{
     try {
-        const currentemail=req.email;
-        const currentvendor=await Vendor.findOne({email:currentemail});
+        // const currentemail=req.email;
+        const currentMobile=req.mobile;
+        // const currentvendor=await Vendor.findOne({email:currentemail});
+        const currentvendor=await Vendor.findOne({mobile:currentMobile});
         const vendorid=currentvendor._id;
         const listofallordersbyvendorid=await Bookedservice.find({vendorid:vendorid, servicestatus:"accepted"});
         return res.status(200).send({listofallordersbyvendorid, status: 200});
@@ -297,8 +371,10 @@ exports.liveOrders=async(req,res)=>{
 //upadate profile photo of vendor
 exports.uploadprofilephoto=[upload.single('image'), async(req,res)=>{
     try {
-        const vendoremail=req.email;
-        const vendor=await Vendor.findOne({email:vendoremail});
+        // const vendoremail=req.email;
+        const currentMobile=req.mobile;
+        // const vendor=await Vendor.findOne({email:vendoremail});
+        const vendor=await Vendor.findOne({mobile:currentMobile});
         
         const image = { path: req.file.path };
 
@@ -317,8 +393,10 @@ exports.uploadprofilephoto=[upload.single('image'), async(req,res)=>{
 //upload kyc details and documents of vendor
 exports.kyc=[upload.array('images', 10), async(req,res)=>{
     try {
-        const vendoremail=req.email;
-        const vendor=await Vendor.findOne({email:vendoremail});
+        // const vendoremail=req.email;
+        const currentMobile=req.mobile;
+        // const vendor=await Vendor.findOne({email:vendoremail});
+        const vendor=await Vendor.findOne({mobile:currentMobile});
         const vendorid=vendor._id;
         const {name, homeaddress, pincode, alternatephone, alternateemail}=req.body;
 
@@ -330,8 +408,9 @@ exports.kyc=[upload.array('images', 10), async(req,res)=>{
             return res.status(400).send({message: "Images are required", status: 400});
         }
         console.log(images);
-        const kycdetails=new kyc({vendorid:vendorid, document:images, name, email:vendoremail, homeaddress, pincode, alternatephone, alternateemail, status:"pending"});
+        const kycdetails=new kyc({vendorid:vendorid, document:images, name, email:vendor.email, homeaddress, pincode, alternatephone, alternateemail, status:"pending"});
         kycdetails.submitted=true;
+        kycdetails.mobile=vendor.mobile;
         await kycdetails.save();
         return res.status(200).send({message: "kyc details uploaded successfully", status: 200});
     } catch (error) {
@@ -344,8 +423,10 @@ exports.kyc=[upload.array('images', 10), async(req,res)=>{
 exports.updatemobileemail=async(req,res)=>{
     try {
         const {mobile,email}=req.body;
-        const currentvendoremail=req.email;
-        const vendor=await Vendor.findOne({email:currentvendoremail});
+        // const currentvendoremail=req.email;
+        const currentMobile=req.mobile;
+        // const vendor=await Vendor.findOne({email:currentvendoremail});
+        const vendor=await Vendor.findOne({mobile:currentMobile});
 
         if(!vendor){
             return res.status(400).send({message:"vendor not found", status: 400});
@@ -356,7 +437,8 @@ exports.updatemobileemail=async(req,res)=>{
         }
         if (email) {
             vendor.email = email;
-            const allServicesOfCurrentVendor=await Service.find({vendoremail:currentvendoremail});
+            // const allServicesOfCurrentVendor=await Service.find({vendoremail:currentvendoremail});
+            const allServicesOfCurrentVendor=await Service.find({vendoreMobile:currentMobile});
             allServicesOfCurrentVendor.forEach(async(service)=>{
                 service.vendoremail=email;
                 await service.save();
@@ -365,7 +447,7 @@ exports.updatemobileemail=async(req,res)=>{
 
         await vendor.save();
 
-        const token = jwt.sign({ email: user.email, role: user.role }, SECRET_KEY, { expiresIn: "7d" });
+        const token = jwt.sign({ email: vendor.email, role: vendor.role, mobile: vendor.mobile }, SECRET_KEY, { expiresIn: "7d" });
 
         return res.status(200).send({message: "Mobile and email updated successfully", token, status: 200});
     } catch (error) {
@@ -380,8 +462,10 @@ exports.getkycStatus=async(req,res)=>{
         if(req.role!=='Vendor'){
             return res.status(400).send({message:"you are not a vendor", status: 400});
         }
-        const currentemail=req.email;
-        const currentvendor=await Vendor.findOne({email:currentemail});
+        // const currentemail=req.email;
+        const currentMobile=req.mobile;
+        // const currentvendor=await Vendor.findOne({email:currentemail});
+        const currentvendor=await Vendor.findOne({mobile:currentMobile});
         const vendorid=currentvendor._id;
         const kycdetails=await kyc.findOne({vendorid:vendorid});
         const kycStatus=kycdetails.status;
@@ -400,7 +484,8 @@ exports.updatediscount=async(req,res)=>{
         }
 
         const {discount, serviceid}=req.body;
-        const currentemail=req.email;
+        // const currentemail=req.email;
+        const currentMobile=req.mobile;
         
         if(!discount || !serviceid){
             return res.status(400).send({message:"discount and serviceid is required", status: 400});
@@ -409,7 +494,8 @@ exports.updatediscount=async(req,res)=>{
         // if (!currentvendor) {
         //     return res.status(400).send({message:"vendor not found", status: 400});
         // }
-        const service=await Service.findOne({vendoremail:currentemail, _id:serviceid});
+        // const service=await Service.findOne({vendoremail:currentemail, _id:serviceid});
+        const service=await Service.findOne({vendoreMobile:currentMobile, _id:serviceid});
         if(!service){
             return res.status(400).send({message:"service not found", status: 400});
         }
@@ -430,14 +516,38 @@ exports.addaddress=async(req,res)=>{
         }
 
         const {houseno, lineone, linetwo, linethree, landmark, pincode, longitude, latitude, city, name, state, country, area_street, sector_area, mobile}=req.body;
-        const currentemail=req.email;
-        const vendor=await Vendor.findOne({email:currentemail});
+        // const currentemail=req.email;
+        const currentMobile=req.mobile;
+        // const vendor=await Vendor.findOne({email:currentemail});
+        const vendor=await Vendor.findOne({mobile:currentMobile});
         if (!vendor) {
             return res.status(400).send({message:"vendor not found", status: 400});
         }
         const address=new Address({houseno, lineone, linetwo, linethree, landmark, pincode, longitude, latitude, vendorid:vendor._id, city:city, name:name, state:state, country:country, area_street:area_street, sector_area:sector_area, mobile:mobile});
         await address.save();
         return res.status(200).send({message:"address added successfully", address,status: 200});
+    } catch (error) {
+        console.log(error);
+        return res.status(500).send({message: "Error occured in try block please check console to see error", status: 500});
+    }
+};
+
+//get all address of vendor
+exports.getaddress=async(req,res)=>{
+    try {
+        if(req.role!=='Vendor'){
+            return res.status(400).send({message:"you are not a vendor", status: 400});
+        }
+        // const currentemail=req.email;
+        const currentMobile=req.mobile;
+        // const vendor=await Vendor.findOne({email:currentemail});
+        const vendor=await Vendor.findOne({mobile:currentMobile});
+        const vendorid=vendor._id;
+        const listofalladdress=await Address.find({vendorid:vendorid});
+        if (listofalladdress.length===0) {
+            return res.status(404).send({message:"vendor don't saved any address yet", status: 404});
+        }
+        return res.status(200).send({listofalladdress, status: 200});
     } catch (error) {
         console.log(error);
         return res.status(500).send({message: "Error occured in try block please check console to see error", status: 500});
