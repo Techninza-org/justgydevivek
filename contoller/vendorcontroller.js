@@ -309,7 +309,7 @@ exports.orderrequests=async(req,res)=>{
 
         let listofallordersbyvendorid=[];
         //add user name and user image and service id , service name and date bookedservice status from bookedService list.
-        listofallordersbyvendorid.forEach( async(order)=>{
+        list.forEach( async(order)=>{
             //find name of user by userid
             const userid=order.userid;
             const user=await User.findOne({_id:userid});
@@ -318,7 +318,12 @@ exports.orderrequests=async(req,res)=>{
             const serviceid=order.serviceid;
             const service=await Service.findOne({_id:serviceid});
             const servicename=service.servicename;
-            listofallordersbyvendorid.push({bookedservice:order, username, userimage, servicename});
+            
+            //find address of user by addressid
+            const addressid=order.addressid;
+            const address=await Address.findOne({_id:addressid});
+            listofallordersbyvendorid.push({bookedservice:order, username, userimage, servicename, address});
+            // listofallordersbyvendorid.push({bookedservice:order, username, userimage, servicename});
         });
             
 
