@@ -45,6 +45,11 @@ exports.addservicebyvendor=[upload.array('images', 10), async(req,res)=>{
         // const vendoremail=req.email;
         const {servicename, title, catergory, servicedescription, price, address, servicerange, discount}=req.body;
 
+        const {houseno, mobile, area_street, sector_area, landmark, pincode, name, longitude, latitude}=req.body;
+
+        //make object of address
+        const newaddress=new Address({houseno, mobile, area_street, sector_area, landmark, pincode, name, longitude, latitude});
+
         //+++++++++++++++++++++++++++++++++++++
         if(catergory){
             const availableCatergories=await Catergory.findOne({catergorytype:catergory});
@@ -77,7 +82,7 @@ exports.addservicebyvendor=[upload.array('images', 10), async(req,res)=>{
             return res.status(400).send({message:"please enter service range", status: 400});
         }
 
-        const newservice=new Service({servicename, title, catergory, servicedescription, price, image: images, address, servicerange});
+        const newservice=new Service({servicename, title, catergory, servicedescription, price, image: images, address:newaddress, servicerange});
         // newservice.vendoremail=vendoremail;
         newservice.vendoreMobile=req.mobile;
         console.log(newservice.vendoreMobile);
@@ -318,7 +323,7 @@ exports.orderrequests=async(req,res)=>{
             const serviceid=order.serviceid;
             const service=await Service.findOne({_id:serviceid});
             const servicename=service.servicename;
-            
+
             //find address of user by addressid
             const addressid=order.addressid;
             const address=await Address.findOne({_id:addressid});
