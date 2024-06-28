@@ -757,6 +757,25 @@ exports.getcatergory=async(req,res)=>{
     }
 };
 
+//get all live sercvices of current vendor
+exports.getliveservices=async(req,res)=>{
+    try {
+        if (req.role!=='Vendor') {
+            return res.status(400).send({message:"you are not a vendor", status: 400});
+        }
+        // const currentemail=req.email;
+        const currentMobile=req.mobile;
+        // const currentvendor=await Vendor.findOne({email:currentemail});
+        const currentvendor=await Vendor.findOne({mobile:currentMobile});
+        const vendorid=currentvendor._id;
+        const listofallliveservices=await Service.find({vendoreMobile:currentMobile, isActive:true});
+        return res.status(200).send({listofallliveservices, status: 200});
+    } catch (error) {
+        console.log(error);
+        return res.status(500).send({message: "Error occured in try block please check console to see error", status: 500});
+    }
+};
+
 
 
 
