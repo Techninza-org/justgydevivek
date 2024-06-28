@@ -248,9 +248,9 @@ exports.fetchKycByVendorId=async(req,res)=>{
             return res.status(401).json({message:'Unauthorized access you are not an admin',status:401});
         }
         const {id}=req.params;
-        const kyc=await Kyc.findOne({vendor:id});
+        const kyc=await Kyc.findOne({vendorid:id});
         if(!kyc){
-            return res.status(400).json({message:'Kyc not found, may be kyc id is not valid',status:400});
+            return res.status(400).json({message:'Kyc not found, may be vendor id is not valid or kyc is not submitted by this vendor',status:400});
         }
         return res.status(200).json({kyc:kyc,status:200});
     } catch (error) {
@@ -305,28 +305,28 @@ exports.fetchUserById=async(req,res)=>{
 };
 
 //get kyc by vendor id
-exports.fetchKycByVendorId=async(req,res)=>{
-    try {
-        if(req.role!=='Admin'){
-            return res.status(401).json({message:'Unauthorized access you are not an admin',status:401});
-        }
+// exports.fetchKycByVendorId=async(req,res)=>{
+//     try {
+//         if(req.role!=='Admin'){
+//             return res.status(401).json({message:'Unauthorized access you are not an admin',status:401});
+//         }
 
-        const {id}=req.params;
-        if(!id){
-            return res.status(400).json({message:'Vendor id is required, please pass it in url path',status:400});
-        }
+//         const {id}=req.params;
+//         if(!id){
+//             return res.status(400).json({message:'Vendor id is required, please pass it in url path',status:400});
+//         }
 
-        const kyc=await Kyc.findOne({vendorid:id});
-        if(!kyc){
-            return res.status(400).json({message:'Kyc not found, may be kyc id is not valid',status:400});
-        }
+//         const kyc=await Kyc.findOne({vendorid:id});
+//         if(!kyc){
+//             return res.status(400).json({message:'Kyc not found, may be kyc id is not valid',status:400});
+//         }
 
-        return res.status(200).json({kyc:kyc,status:200});
-    } catch (error) {
-        console.log(error);
-        return res.status(500).json({message:'Unable to fetch kyc, may be vendor-Id is invalid',status:500});
-    }
-};
+//         return res.status(200).json({kyc:kyc,status:200});
+//     } catch (error) {
+//         console.log(error);
+//         return res.status(500).json({message:'Unable to fetch kyc, may be vendor-Id is invalid',status:500});
+//     }
+// };
 
 //get service by id
 exports.fetchServiceById=async(req,res)=>{

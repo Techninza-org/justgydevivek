@@ -472,6 +472,15 @@ exports.kyc=[upload.array('images', 10), async(req,res)=>{
             return res.status(400).send({message: "Images are required", status: 400});
         }
         console.log(images);
+
+        //if kyc is already submitted then return a message
+        const isSubmitted=await kyc.findOne({vendorid:vendorid});
+        if (isSubmitted) {
+            return res.status(400).send({message: "kyc details already submitted", status: 400});
+        }
+
+
+
         const kycdetails=new kyc({vendorid:vendorid, document:images, name, email:vendor.email, homeaddress, pincode, alternatephone, alternateemail, status:"pending"});
         kycdetails.submitted=true;
         kycdetails.mobile=vendor.mobile;
@@ -612,6 +621,107 @@ exports.getaddress=async(req,res)=>{
             return res.status(404).send({message:"vendor don't saved any address yet", status: 404});
         }
         return res.status(200).send({listofalladdress, status: 200});
+    } catch (error) {
+        console.log(error);
+        return res.status(500).send({message: "Error occured in try block please check console to see error", status: 500});
+    }
+};
+
+//make isActive false by service id
+exports.makeinactive=async(req,res)=>{
+    try {
+        if(req.role!=='Vendor'){
+            return res.status(400).send({message:"you are not a vendor", status: 400});
+        }
+
+        const {serviceid}=req.body;
+        const currentMobile=req.mobile;
+        const vendor=await Vendor.findOne({mobile:currentMobile});
+        if (!vendor) {
+            return res.status(400).send({message:"vendor not found", status: 400});
+        }
+
+
+        const service=await Service.findOne({vendoreMobile:currentMobile, _id:serviceid});
+        if (!service) {
+            return res.status(400).send({message:"service not found", status: 400});
+        }
+
+        service.isActive=false;
+        await service.save();
+        return res.status(200).send({message:"service is now inactive", service,status: 200});
+    } catch (error) {
+        console.log(error);
+        return res.status(500).send({message: "Error occured in try block please check console to see error", status: 500});
+    }
+};
+
+//update address by address id
+exports.updateaddress=async(req,res)=>{
+    try {
+        if(req.role!=='Vendor'){
+            return res.status(400).send({message:"you are not a vendor", status: 400});
+        }
+
+        const {addressid,houseno, landmark, pincode, longitude, latitude, city, name, state, country, area_street, mobile}=req.body;
+        if(!addressid){
+            return res.status(400).send({message:"addressid is required", status: 400});
+        }
+        const currentMobile=req.mobile;
+        const vendor=await Vendor.findOne({mobile:currentMobile});
+        if (!vendor) {
+            return res.status(400).send({message:"vendor not found", status: 400});
+        }
+        const address=await Address.findOne({_id:addressid, vendorid:vendor._id});
+        if (!address) {
+            return res.status(400).send({message:"address not found or current address id not belongs to current vendor's id", status: 400});
+        }
+        if(houseno){
+            address.houseno=houseno;
+        }
+        if(landmark){
+            address.landmark=landmark;
+        }
+        if(pincode){
+            address.pincode=pincode;
+        }
+        if(longitude){
+            address.longitude=longitude;
+        }
+        if(latitude){
+            address.latitude=latitude;
+        }
+        if(city){
+            address.city=city;
+        }
+        if(name){
+            address.name=name;
+        }
+        if(state){
+            address.state=state;
+        }
+        if(country){
+            address.country=country;
+        }
+        if(area_street){
+            address.area_street=area_street;
+        }
+        if(mobile){
+            address.mobile=mobile;
+        }
+        await address.save();
+        return res.status(200).send({message:"address updated successfully", address,status: 200});
+    } catch (error) {
+        console.log(error);
+        return res.status(500).send({message: "Error occured in try block please check console to see error", status: 500});
+    }
+};
+
+//get list of available catergories
+exports.getcatergory=async(req,res)=>{
+    try {
+        const listofallcatergories=await Catergory.find({});
+        return res.status(200).send({listofallcatergories, status: 200});
     } catch (error) {
         console.log(error);
         return res.status(500).send({message: "Error occured in try block please check console to see error", status: 500});
