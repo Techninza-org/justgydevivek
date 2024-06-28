@@ -119,7 +119,8 @@ exports.bookservice=async(req,res)=>{
         const currentMobile=req.mobile;
         // const serv=req.body;
         const {quantity, addressid, coinsused}=req.body;
-        if (!quantity || !addressid || !coinsused) {
+        console.log(req.body);
+        if (!quantity || !addressid || (!coinsused && coinsused < 0)) {
             return res.status(400).send({message:"quantity, addressid, coinused is required", status: 400});
         }
 
