@@ -38,6 +38,11 @@ exports.createVendor=async(req,res)=>{
             return res.status(401).json({message:'Unauthorized access you are not an admin',status:401});
         }
         const {email,password,name,mobile}=req.body;
+
+        if(!email || !password || !name || !mobile){
+            return res.status(400).json({message:'name, passowrd, mobile, email is required and mobile and email should be unique',status:400});
+        }
+
         const isAlreadyExist=await Vendor.findOne({ email });
         const isAlreadyExistByMobile=await Vendor.findOne({ mobile });
 
@@ -57,7 +62,7 @@ exports.createVendor=async(req,res)=>{
             await vendor.save();
 
             delete vendor.password;
-            const token = jwt.sign({ email: vendor.email, role: vendor.role }, SECRET_KEY, { expiresIn: "7d" });
+            const token = jwt.sign({ email: vendor.email, role: vendor.role, mobile: vendor.mobile }, SECRET_KEY, { expiresIn: "7d" });
             return res.status(200).send({vendor: vendor, token: token, status: 200});
         });
     } catch (error) {
@@ -73,6 +78,11 @@ exports.createUser=async(req,res)=>{
             return res.status(401).json({message:'Unauthorized access you are not an admin',status:401});
         }
         const {email,password,name,mobile}=req.body;
+
+        if(!email || !password || !name || !mobile){
+            return res.status(400).json({message:'name, passowrd, mobile, email is required and mobile and email should be unique',status:400});
+        }
+
         const isAlreadyExist=await User.findOne({ email });
         const isAlreadyExistByMobile=await User.findOne({ mobile });
 
@@ -92,7 +102,7 @@ exports.createUser=async(req,res)=>{
             await user.save();
 
             delete user.password;
-            const token = jwt.sign({ email: user.email, role: user.role }, SECRET_KEY, { expiresIn: "7d" });
+            const token = jwt.sign({ email: user.email, role: user.role, mobile: user.mobile }, SECRET_KEY, { expiresIn: "7d" });
             return res.status(200).send({user: user, token: token, status: 200});
         });
     } catch (error) {

@@ -48,7 +48,7 @@ exports.addservicebyvendor=[upload.array('images', 10), async(req,res)=>{
         if(catergory){
             const availableCatergories=await Catergory.findOne({catergorytype:catergory});
             if (!availableCatergories) {
-                return res.status(400).send({message:"you cant create this type of catergory", status: 400});
+                return res.status(400).send({message:"you cant use this type of catergory", status: 400});
             }
         }
 
@@ -228,6 +228,9 @@ exports.deletevendor=async (req,res)=>{
 //accept order
 exports.acceptorder=async(req,res)=>{
     try {
+        if(req.role!=='Vendor'){
+            return res.status(400).send({message:"you are not a vendor", status: 400});
+        }
         // const currentemail=req.email;
         const currentMobile=req.mobile;
         // const currentvendor=await Vendor.findOne({email:currentemail});
@@ -235,12 +238,17 @@ exports.acceptorder=async(req,res)=>{
         if (!currentvendor) {
             return res.status(400).send({message:"your are not a vendor", status: 400});
         }
-        const bookedservice=req.body;
-        const bookedserviceid=bookedservice._id;
+        const {bookedserviceid}=req.body;
+        // const bookedserviceid=bookedservice._id;
         if (!bookedserviceid) {
-            return res.status(400).send({message:"bookedserviceid variable is null", status: 400});
+            return res.status(400).send({message:"bookedservice's id is required", status: 400});
         }
-        const getbookedservice=await Bookedservice.findById(bookedserviceid);
+        // const getbookedservice=await Bookedservice.findById(bookedserviceid);
+        const getbookedservice=await Bookedservice.findOne({_id:bookedserviceid, vendorid:currentvendor._id});
+        if (!getbookedservice) {
+            return res.status(400).send({message:"bookedservice not found, may bookedservice and current vendor id not matched or id is not valid", status: 400});
+        }
+
         getbookedservice.servicestatus='accepted';
         await getbookedservice.save();
         return res.status(200).send({message:"order accepted", status: 200, getbookedservice});
@@ -253,6 +261,9 @@ exports.acceptorder=async(req,res)=>{
 //reject order
 exports.rejectorder=async(req,res)=>{
     try {
+        if(req.role!=='Vendor'){
+            return res.status(400).send({message:"you are not a vendor", status: 400});
+        }
         // const currentemail=req.email;
         const currentMobile=req.mobile;
         // const currentvendor=await Vendor.findOne({email:currentemail});
@@ -260,12 +271,18 @@ exports.rejectorder=async(req,res)=>{
         if (!currentvendor) {
             return res.status(400).send({message:"your are not a vendor", status: 400});
         }
-        const bookedservice=req.body;
-        const bookedserviceid=bookedservice._id;
+        const {bookedserviceid}=req.body;
+        // const bookedserviceid=bookedservice._id;
         if (!bookedserviceid) {
             return res.status(400).send({message:"bookedserviceid variable is null", status: 400});
         }
-        const getbookedservice=await Bookedservice.findById(bookedserviceid);
+        // const getbookedservice=await Bookedservice.findById(bookedserviceid);
+        const getbookedservice=await Bookedservice.findOne({_id:bookedserviceid, vendorid:currentvendor._id});
+        if (!getbookedservice) {
+            return res.status(400).send({message:"bookedservice not found, may bookedservice and current vendor id not matched or id is not valid", status: 400});
+        }
+
+
         getbookedservice.servicestatus='rejected';
         await getbookedservice.save();
         return res.status(200).send({message:"order successfully rejected", status: 200, getbookedservice});
@@ -278,6 +295,9 @@ exports.rejectorder=async(req,res)=>{
 //order requests
 exports.orderrequests=async(req,res)=>{
     try {
+        if(req.role!=='Vendor'){
+            return res.status(400).send({message:"you are not a vendor", status: 400});
+        }
         // const currentemail=req.email;
         const currentMobile=req.mobile;
         // const currentvendor=await Vendor.findOne({email:currentemail});
@@ -355,12 +375,28 @@ exports.completed=async(req,res)=>{
 //get all live orders
 exports.liveOrders=async(req,res)=>{
     try {
+        if(req.role!=='Vendor'){
+            return res.status(400).send({message:"you are not a vendor", status: 400});
+        }
         // const currentemail=req.email;
         const currentMobile=req.mobile;
         // const currentvendor=await Vendor.findOne({email:currentemail});
         const currentvendor=await Vendor.findOne({mobile:currentMobile});
         const vendorid=currentvendor._id;
-        const listofallordersbyvendorid=await Bookedservice.find({vendorid:vendorid, servicestatus:"accepted"});
+        // const listofallordersbyvendorid=await Bookedservice.find({vendorid:vendorid, servicestatus:"accepted"});
+        const list=await Bookedservice.find({vendorid:vendorid, servicestatus:"accepted"});
+
+        let listofallordersbyvendorid=[];
+
+        list.forEach( async(order)=>{
+            //find name of service by serviceid
+            const serviceid=order.serviceid;
+            const service=await Service.findOne({_id:serviceid});
+            const servicename=service.servicename;
+            listofallordersbyvendorid.push({bookedservice:order,servicename, paymentStatus: "comes from payment gateway"});
+        });
+
+
         return res.status(200).send({listofallordersbyvendorid, status: 200});
     } catch (error) {
         console.log(error);
@@ -393,6 +429,26 @@ exports.uploadprofilephoto=[upload.single('image'), async(req,res)=>{
 //upload kyc details and documents of vendor
 exports.kyc=[upload.array('images', 10), async(req,res)=>{
     try {
+        if(req.role!=='Vendor'){
+            return res.status(400).send({message:"you are not a vendor", status: 400});
+        }
+
+        //checking if files are uploaded or not
+        if (!req.files || req.files.length === 0) {
+            return res.status(400).send({ message: "At least one file is required", status: 400 });
+        }
+
+        const allowedMimeTypes = ['image/jpeg', 'image/png']; // Define allowed MIME types
+
+        // Check the type of each uploaded file
+        for (let file of req.files) {
+            if (!allowedMimeTypes.includes(file.mimetype)) {
+                return res.status(400).send({ message: `File type ${file.mimetype} is not allowed, only jpeg or png files are allowed`, status: 400 });
+            }
+        }
+
+
+
         // const vendoremail=req.email;
         const currentMobile=req.mobile;
         // const vendor=await Vendor.findOne({email:vendoremail});
@@ -403,6 +459,14 @@ exports.kyc=[upload.array('images', 10), async(req,res)=>{
         if (!name || !homeaddress || !pincode) {
             return res.status(400).send({message: "All fields are required", status: 400});
         }
+
+        //if kyc with same vendorid already exist then return error
+        const isExistedkyc=await kyc.findOne({vendorid:vendorid});
+        if (isExistedkyc) {
+            return res.status(400).send({message: "kyc details already uploaded by this vendor id", status: 400});
+        }
+
+
         const images = req.files?.map((file) => ({ path: file.path }));
         if (!images) {
             return res.status(400).send({message: "Images are required", status: 400});

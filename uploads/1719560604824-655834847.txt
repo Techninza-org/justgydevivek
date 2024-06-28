@@ -1,0 +1,22 @@
+open cmd where .pem file is existed
+
+
+login
+ssh -i justgyde.pem ubuntu@103.189.172.112
+
+ls [show folder/files in current directory]
+ls -a [show hidden files also]
+
+cd <foldername>/ [to move to entered foldername]
+ls -a
+
+pm2 restart all [to restart all files on server]
+
+pm2 log 0 [to see all logs]
+
+
+(closing server)
+ctrl+c 
+ctrl+d 
+ctrl+d
+
