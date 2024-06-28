@@ -351,6 +351,9 @@ exports.getall=async(req,res)=>{
 //upload user image
 exports.uploadimage=[upload.single('image'),async(req,res)=>{
     try {
+        if(!req.file){
+            return res.status(400).send({message:"Image not uploaded from client side", status: 400});
+        }
         // const currentuseremail=req.email;
         const currentMobile=req.mobile;
         // const userbyuseremail=await User.findOne({email:currentuseremail});

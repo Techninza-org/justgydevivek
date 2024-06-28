@@ -40,15 +40,14 @@ exports.addservicebyvendor=[upload.array('images', 10), async(req,res)=>{
             return res.status(400).send({message:"you are not a vendor", status: 400});
         }
         const currentMobile=req.mobile;
-        console.log(currentMobile);
 
         // const vendoremail=req.email;
         const {servicename, title, catergory, servicedescription, price, address, servicerange, discount}=req.body;
 
-        const {houseno, mobile, area_street, sector_area, landmark, pincode, name, longitude, latitude}=req.body;
+        const {houseno, mobile, area_street, sector_area, landmark, pincode, name, longitude, latitude, city, state, country}=req.body;
 
         //make object of address
-        const newaddress=new Address({houseno, mobile, area_street, sector_area, landmark, pincode, name, longitude, latitude});
+        const newaddress=new Address({houseno, mobile, area_street, sector_area, landmark, pincode, name, longitude, latitude, city, state, country});
 
         //+++++++++++++++++++++++++++++++++++++
         if(catergory){
@@ -84,7 +83,7 @@ exports.addservicebyvendor=[upload.array('images', 10), async(req,res)=>{
 
         const newservice=new Service({servicename, title, catergory, servicedescription, price, image: images, address:newaddress, servicerange});
         // newservice.vendoremail=vendoremail;
-        newservice.vendoreMobile=req.mobile;
+        newservice.vendoreMobile=currentMobile;
         console.log(newservice.vendoreMobile);
 
         if(discount || discount>=0 && discount<=100){
@@ -435,6 +434,13 @@ exports.liveOrders=async(req,res)=>{
 //upadate profile photo of vendor
 exports.uploadprofilephoto=[upload.single('image'), async(req,res)=>{
     try {
+
+        //check image is uploaded or not from client side
+        if (!req.file) {
+            return res.status(400).send({message: "Image is required, please upload an image", status: 400});
+        }
+
+
         // const vendoremail=req.email;
         const currentMobile=req.mobile;
         // const vendor=await Vendor.findOne({email:vendoremail});
