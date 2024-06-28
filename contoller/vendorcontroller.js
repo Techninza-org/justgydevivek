@@ -644,7 +644,7 @@ exports.makeinactive=async(req,res)=>{
 
         const service=await Service.findOne({vendoreMobile:currentMobile, _id:serviceid});
         if (!service) {
-            return res.status(400).send({message:"service not found", status: 400});
+            return res.status(400).send({message:"service not found or service id not belongs to current vendor", status: 400});
         }
 
         service.isActive=false;
@@ -655,6 +655,35 @@ exports.makeinactive=async(req,res)=>{
         return res.status(500).send({message: "Error occured in try block please check console to see error", status: 500});
     }
 };
+
+//make isActive true by service id
+exports.makeactive=async(req,res)=>{
+    try {
+        if(req.role!=='Vendor'){
+            return res.status(400).send({message:"you are not a vendor", status: 400});
+        }
+
+        const {serviceid}=req.body;
+        const currentMobile=req.mobile;
+        const vendor=await Vendor.findOne({mobile:currentMobile});
+        if (!vendor) {
+            return res.status(400).send({message:"vendor not found", status: 400});
+        }
+
+        const service=await Service.findOne({vendoreMobile:currentMobile, _id:serviceid});
+        if (!service) {
+            return res.status(400).send({message:"service not found", status: 400});
+        }
+
+        service.isActive=true;
+        await service.save();
+        return res.status(200).send({message:"service is now active", service,status: 200});
+    } catch (error) {
+        console.log(error);
+        return res.status(500).send({message: "Error occured in try block please check console to see error", status: 500});
+    }
+};
+
 
 //update address by address id
 exports.updateaddress=async(req,res)=>{
