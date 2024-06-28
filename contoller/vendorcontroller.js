@@ -1,5 +1,6 @@
 const Vendor=require('../model/vendor');
 const Address=require('../model/address');
+const User=require('../model/user');
 const Service=require('../model/service');
 const Rating=require('../model/rating');
 const kyc=require('../model/kyc');
@@ -303,7 +304,24 @@ exports.orderrequests=async(req,res)=>{
         // const currentvendor=await Vendor.findOne({email:currentemail});
         const currentvendor=await Vendor.findOne({mobile:currentMobile});
         const vendorid=currentvendor._id;
-        const listofallordersbyvendorid=await Bookedservice.find({vendorid:vendorid, servicestatus:"PLACED"});
+        // const listofallordersbyvendorid=await Bookedservice.find({vendorid:vendorid, servicestatus:"PLACED"});
+        const list=await Bookedservice.find({vendorid:vendorid, servicestatus:"PLACED"});
+
+        let listofallordersbyvendorid=[];
+        //add user name and user image and service id , service name and date bookedservice status from bookedService list.
+        listofallordersbyvendorid.forEach( async(order)=>{
+            //find name of user by userid
+            const userid=order.userid;
+            const user=await User.findOne({_id:userid});
+            const username=user.name;
+            const userimage=user.image;
+            const serviceid=order.serviceid;
+            const service=await Service.findOne({_id:serviceid});
+            const servicename=service.servicename;
+            listofallordersbyvendorid.push({bookedservice:order, username, userimage, servicename});
+        });
+            
+
         return res.status(200).send({listofallordersbyvendorid, status: 200});
     }
     catch (error) {
