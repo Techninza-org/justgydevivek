@@ -553,7 +553,7 @@ exports.rejectKycByVendorId=async(req,res)=>{
             return res.status(400).json({message:'Vendor id is required, please pass it in url path',status:400});
         }
 
-        const kyc=await Kyc.findOne({vendor:id});
+        const kyc=await Kyc.findOne({vendorid:id});
         if(!kyc){
             return res.status(400).json({message:'Kyc not found, may be vendor id is not valid',status:400});
         }
