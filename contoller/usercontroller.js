@@ -991,6 +991,61 @@ exports.getServicesAccordingToUserLocation=async(req,res)=>{
     }
 };
 
+//get top 5 most booked services in last week
+exports.getTop5MostBookedServicesInLastWeek = async (req, res) => {
+    try {
+        const lastweek = new Date(new Date().getTime() - 7 * 24 * 60 * 60 * 1000);
+
+        // Find all services booked in the last week
+        const bookedServices = await Bookedservice.find({ date: { $gte: lastweek } });
+
+        if (bookedServices.length === 0) {
+            return res.status(404).send({ message: "No booked services found", status: 404 });
+        }
+
+        // Group services by category
+        const servicesByCategory = {};
+
+        for (const bookedService of bookedServices) {
+            const service = await Service.findById(bookedService.serviceid);
+
+            if (service) {
+                const category = service.catergory;
+                if (!servicesByCategory[category]) {
+                    servicesByCategory[category] = [];
+                }
+
+                servicesByCategory[category].push({
+                    service,
+                    quantity: bookedService.quantity,
+                });
+            }
+        }
+
+        // Get the top services from each category
+        const topServices = [];
+
+        for (const category in servicesByCategory) {
+            const services = servicesByCategory[category];
+            services.sort((a, b) => b.quantity - a.quantity); // Sort services by quantity in descending order
+            const topServicesForCategory = services.slice(0, Math.min(5, services.length)); // Get up to top 5 services
+            topServicesForCategory.forEach((service) => {
+                topServices.push({
+                    service: service.service,
+                    category,
+                    quantity: service.quantity,
+                });
+            });
+        }
+
+        console.log(topServices);
+
+        return res.status(200).send({ services: topServices, status: 200 });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).send({ message: "Internal server error", status: 500 });
+    }
+};
 
 
 
