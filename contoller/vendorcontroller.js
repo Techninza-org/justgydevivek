@@ -62,18 +62,17 @@ exports.addservicebyvendor=[upload.array('images', 10), async(req,res)=>{
         }
 
         //storing list of images path in images variable
-        const images = req.files?.map((file) => ({ path: file.path }));
+        // const images = req.files?.map((file) => ({ path: file.path })); //storing complete path of image.
 
-        //++++++++++++++++
-        // if (images){
-        //     for (let i = 0; i < images.length; i++) {
-        //         // images[i].path = images[i].path.replace(/\\/g, "/");
-        //         console.log(images[i].path);
-        //         images[i].path = images[i].path.replace("/home/ubuntu/new/", "");
-        //         console.log(images[i].path);
-        //     }
-        // }
-        //++++++++++++++++
+
+
+        //stroing relative path only of image in images variable
+        const images = req.files?.map((file) => {
+            // Extract the relative path from 'uploads' directory
+            const uploadDirIndex = file.path.indexOf('uploads');
+            const relativePath = file.path.substring(uploadDirIndex);
+            return { path: relativePath };
+        });
 
         console.log(images);
 

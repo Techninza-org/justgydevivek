@@ -1047,6 +1047,53 @@ exports.getTop5MostBookedServicesInLastWeek = async (req, res) => {
     }
 };
 
+//search services by service name and catergory
+exports.searchServicesByServiceNameAndCatergory=async(req,res)=>{
+    try {
+        const {search}=req.body;
+        if (!search) {
+            return res.status(400).send({message:"search is required", status: 400});
+        }
+        const services=await Service.find({$or:[{servicename:{$regex:search, $options:'i'}},{catergory:{$regex:search, $options:'i'}}]});
+        return res.status(200).send({services, status: 200});
+    }
+    catch (error) {
+        console.log(error);
+        return res.status(500).send({message:"Internal server error", status: 500});
+    }
+};
+
+//get all services by name and catergory within a 50km range of user's location using user's longitude and latitude
+exports.getServicesByNameAndCatergoryWithin50kmRange=async(req,res)=>{
+    try {
+        const {search, latitute, longitude}=req.body;
+        if (!search || !latitute || !longitude) {
+            return res.status(400).send({message:"search, latitute and longitude is required", status: 400});
+        }
+        const services=await Service.find({$or:[{servicename:{$regex:search, $options:'i'}},{catergory:{$regex:search, $options:'i'}}]});
+        const servicesWithin50kmRange=[];
+        for (let i = 0; i < services.length; i++) {
+            const service=services[i];
+            const vendor=await Vendor.findOne({mobile:service.vendoreMobile});
+            const vendorAddress=await Address.find({userid:vendor._id});
+            if (!vendorAddress) {
+                return res.status(404).send({message:"Vendor address not found", status: 404});
+            }
+            const vendorLocation=vendorAddress[0];
+            const distance=geolib.getDistance({latitude: latitute, longitude: longitude}, {latitude: vendorLocation.latitude, longitude: vendorLocation.longitude});
+            if (distance<=50) {
+                servicesWithin50kmRange.push(service);
+            }
+        }
+        return res.status(200).send({servicesWithin50kmRange, status: 200});
+    }
+    catch (error) {
+        console.log(error);
+        return res.status(500).send({message:"Internal server error", status: 500});
+    }
+};
+
+
 
 
 
