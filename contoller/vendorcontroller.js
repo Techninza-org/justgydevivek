@@ -311,27 +311,50 @@ exports.orderrequests=async(req,res)=>{
         // const listofallordersbyvendorid=await Bookedservice.find({vendorid:vendorid, servicestatus:"PLACED"});
         const list=await Bookedservice.find({vendorid:vendorid, servicestatus:"PLACED"});
 
-        let listofallordersbyvendorid=[];
-        //add user name and user image and service id , service name and date bookedservice status from bookedService list.
-        list.forEach( async(order)=>{
-            //find name of user by userid
-            const userid=order.userid;
-            const user=await User.findOne({_id:userid});
-            const username=user.name;
-            const userimage=user.image;
-            const serviceid=order.serviceid;
-            const service=await Service.findOne({_id:serviceid});
-            const servicename=service.servicename;
 
-            //find address of user by addressid
-            const addressid=order.addressid;
-            const address=await Address.findOne({_id:addressid});
-            listofallordersbyvendorid.push({bookedservice:order, username, userimage, servicename, address});
-            // listofallordersbyvendorid.push({bookedservice:order, username, userimage, servicename});
-        });
+        let listOf=[];
+        //add user name and user image and service id , service name and date bookedservice status from bookedService list.
+        // list.forEach( async(order)=>{
+        //     console.log("aaaaaaa");
+        //     console.log(order);
+        //     //find name of user by userid
+        //     const userid=order.userid;
+        //     const user=await User.findOne({_id:userid});
+        //     const username=user.name;
+        //     const userimage=user.image;
+        //     const serviceid=order.serviceid;
+        //     const service=await Service.findOne({_id:serviceid});
+        //     const servicename=service.servicename;
+
+        //     //find address of user by addressid
+        //     const addressid=order.addressid;
+        //     const address=await Address.findOne({_id:addressid});
+        //     listOf.push({bookedservice:order, username, userimage, servicename, address});
+
+
+        //     console.log("++++++++++++++++++++++");
+        //     console.log(listOf);
+        // });
+
+        // Use Promise.all to ensure all async operations are completed
+        await Promise.all(list.map(async (order) => {
+            const userid = order.userid;
+            const user = await User.findOne({ _id: userid });
+            const username = user.name;
+            const userimage = user.image;
+
+            const serviceid = order.serviceid;
+            const service = await Service.findOne({ _id: serviceid });
+            const servicename = service.servicename;
+
+            const addressid = order.addressid;
+            const address = await Address.findOne({ _id: addressid });
+
+            listOf.push({ bookedservice: order, username, userimage, servicename, address });
+        }));
             
 
-        return res.status(200).send({listofallordersbyvendorid, status: 200});
+        return res.status(200).send({listofallordersbyvendorid: listOf, status: 200});
     }
     catch (error) {
         console.log(error);

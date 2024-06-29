@@ -158,7 +158,7 @@ exports.bookservice=async(req,res)=>{
             return res.status(400).send({message:"serviceid or vendorid or userid is null", status: 400});  
         }
         
-        const newbookeservice=new Bookedservice({serviceid,userid,vendorid, date: new Date()});
+        const newbookeservice=new Bookedservice({serviceid,userid,vendorid:vendorid, date: new Date()});
         
         newbookeservice.servicestatus="PLACED";
 
