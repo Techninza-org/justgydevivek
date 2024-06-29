@@ -582,6 +582,34 @@ exports.createFAQ=async(req,res)=>{
     }
 };
 
+//get all vendors in database in new first oreder
+exports.getAllVendors=async(req,res)=>{
+    try {
+        if (req.role !== 'Admin') {
+            return res.status(401).json({ message: 'Unauthorized access you are not an admin', status: 401 });
+        }
+        const vendors=await Vendor.find().sort({vendorcreationdate:-1});
+        return res.status(200).json({vendors:vendors,status:200});
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({message:'Unable to fetch vendors',status:500});
+    }
+};
+
+//get all users in database in new first oreder
+exports.getAllUsers=async(req,res)=>{
+    try {
+        if (req.role !== 'Admin') {
+            return res.status(401).json({ message: 'Unauthorized access you are not an admin', status: 401 });
+        }
+        const users=await User.find().sort({usercreationdate:-1});
+        return res.status(200).json({users:users,status:200});
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({message:'Unable to fetch users',status:500});
+    }
+};
+
 
 
 

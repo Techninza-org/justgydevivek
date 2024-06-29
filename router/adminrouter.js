@@ -3,7 +3,7 @@ const router = require('express').Router();
 const {createUser,createVendor,deleteVendorById,fetchAllServices,fetchAllUsers, fetchAllVendors, fetchAllBookedServices
     ,fetchAllAddresses,fetchAllKycs,fetchKycByVendorId,deleteUserById,fetchVendorById, addCatergory,
     approveKycByVendorId,rejectKycByVendorId,editUserById,editVendorById, fetchAllServicesByVendorEmail,
-     fetchServiceById, fetchUserById, createFAQ} = require('../contoller/admincontroller');
+     fetchServiceById, fetchUserById, createFAQ, getAllUsers, getAllVendors} = require('../contoller/admincontroller');
 
 //create
 router.post('/createUser',createUser);
@@ -22,6 +22,9 @@ router.get('/fetchAllBookedServices',fetchAllBookedServices);
 router.get('/fetchAllAddresses',fetchAllAddresses);
 router.get('/fetchAllKycs',fetchAllKycs);
 router.get('/fetchAllServicesByVendorEmail/:email',fetchAllServicesByVendorEmail);
+
+router.get('/getAllUsers',getAllUsers); //new first
+router.get('/getAllVendors',getAllVendors); //new first
 
 //fetch by Id
 router.get('/fetchKycByVendorId/:id',fetchKycByVendorId);
