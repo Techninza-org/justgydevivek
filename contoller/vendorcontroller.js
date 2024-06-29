@@ -6,6 +6,7 @@ const Rating=require('../model/rating');
 const kyc=require('../model/kyc');
 const Bookedservice=require('../model/bookedservice');
 const Aboutus=require('../model/aboutus');
+const Sos=require('../model/sos');
 const crypto = require('node:crypto');
 const bcrypt = require('bcrypt');
 const path = require('path');
@@ -854,6 +855,9 @@ exports.getliveservices=async(req,res)=>{
 exports.aboutus=async(req,res)=>{
     try {
         const aboutus=await Aboutus.findOne({});
+        if (!aboutus) {
+            return res.status(404).send({message:"about is not created by admin", status: 404});
+        }
         return res.status(200).send({aboutus, status: 200});
     } catch (error) {
         console.log(error);
@@ -861,6 +865,19 @@ exports.aboutus=async(req,res)=>{
     }
 };
 
+//get sos
+exports.sos=async(req,res)=>{
+    try {
+        const sos=await Sos.findOne({});
+        if (!sos) {
+            return res.status(404).send({message:"sos is not created by admin", status: 404});
+        }
+        return res.status(200).send({sos, status: 200});
+    } catch (error) {
+        console.log(error);
+        return res.status(500).send({message: "Error occured in try block please check console to see error", status: 500});
+    }
+};
 
 
 

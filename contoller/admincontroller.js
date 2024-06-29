@@ -7,6 +7,7 @@ const Address=require('../model/address');
 const Kyc=require('../model/kyc');
 const Catergory=require('../model/catergory');
 const Aboutus=require('../model/aboutus');
+const Sos=require('../model/sos');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
@@ -703,6 +704,63 @@ exports.editAboutUs=[upload.single('image'),async(req,res)=>{
         return res.status(500).json({message:'Unable to update about us',status:500});
     }
 }];
+
+//create SoS
+exports.createSoS=async(req,res)=>{
+    try {
+
+        if (req.role !== 'Admin') {
+            return res.status(401).json({ message: 'Unauthorized access you are not an admin', status: 401 });
+        }
+
+
+        const {number}=req.body;
+
+        if(!number){
+            return res.status(400).json({message:'Number is required',status:400});
+        }
+
+        //check if sos already exists
+        const isAlreadyExist=await Sos.findOne({});
+        if(isAlreadyExist){
+            return res.status(400).json({message:'SoS already exists, you can only update it',status:400});
+        }
+
+        const sos=new Sos({ number: number});
+        await sos.save();
+        return res.status(200).json({message:'SoS added successfully',status:200, sos:sos});
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({message:'Unable to add SoS',status:500});
+    }
+};
+
+//edit sos
+exports.editSos=async(req,res)=>{
+    try {
+        if (req.role !== 'Admin') {
+            return res.status(401).json({ message: 'Unauthorized access you are not an admin', status: 401 });
+        }
+
+        const {number}=req.body;
+
+        if(!number){
+            return res.status(400).json({message:'Number is required',status:400});
+        }
+
+        const sos=await Sos.findOne({});
+        if(!sos){
+            return res.status(400).json({message:'SoS not found, you can only add it',status:400});
+        }
+
+        sos.number=number;
+        await sos.save();
+        return res.status(200).json({message:'SoS updated successfully',status:200, sos:sos});
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({message:'Unable to update SoS',status:500});
+    }
+}
 
 
 

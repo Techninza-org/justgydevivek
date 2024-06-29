@@ -11,6 +11,7 @@ const bcrypt = require('bcrypt');
 const Catergory=require('../model/catergory');
 const jwt = require('jsonwebtoken');
 const Faq=require('../model/faq');
+const Sos=require('../model/sos');
 
 const path = require('path');
 const multer = require('multer');
@@ -1109,7 +1110,26 @@ exports.getServicesByNameAndCatergoryWithin50kmRange=async(req,res)=>{
 exports.getAboutUs=async(req,res)=>{
     try {
         const aboutUs=await Aboutus.find({});
+        if(!aboutUs){
+            return res.status(404).send({message:"abous is not created by admin", status:404})
+
+        }
         return res.status(200).send({aboutUs, status: 200});
+    }
+    catch (error) {
+        console.log(error);
+        return res.status(500).send({message:"Internal server error", status: 500});
+    }
+}
+
+//get sos
+exports.getSos=async(req,res)=>{
+    try {
+        const sos=await Sos.find({});
+        if(!sos){
+            return res.status(404).send({message:"sos is not created by admin", status:404})
+        }
+        return res.status(200).send({sos, status: 200});
     }
     catch (error) {
         console.log(error);
