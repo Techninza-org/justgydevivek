@@ -6,6 +6,7 @@ const BookedService=require('../model/bookedservice');
 const Address=require('../model/address');
 const Kyc=require('../model/kyc');
 const Catergory=require('../model/catergory');
+const Aboutus=require('../model/aboutus');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
@@ -490,7 +491,14 @@ exports.addCatergory=[upload.single('icon'),async(req,res)=>{
 
 
         const {catergorytype, startcolor, endcolor}=req.body;
-        const icon={ path:  req.file.path };
+        // const icon={ path:  req.file.path }; //original code for icon image
+
+        //++++++++++++++++++++
+        const uploadDirIndex = req.file.path.indexOf('uploads');
+        const relativePath = req.file.path.substring(uploadDirIndex);
+
+        const icon = { path: relativePath };
+        //++++++++++++++++++++
 
         if(!catergorytype || !startcolor || !endcolor){
             return res.status(400).json({message:'Catergory type, start color and end color is required',status:400});
@@ -609,6 +617,92 @@ exports.getAllUsers=async(req,res)=>{
         return res.status(500).json({message:'Unable to fetch users',status:500});
     }
 };
+
+//create about us by using description, title and image
+exports.createAboutUs=[upload.single('image'),async(req,res)=>{
+    try {
+        if (req.role !== 'Admin') {
+            return res.status(401).json({ message: 'Unauthorized access you are not an admin', status: 401 });
+        }
+        if(!req.file){
+            return res.status(400).json({message:'Image is required, please upload it',status:400});
+        }
+
+        const {description,title}=req.body;
+
+        if(!description || !title){
+            return res.status(400).json({message:'Description and title is required',status:400});
+        }
+
+        //++++++++++++++++++++
+        const uploadDirIndex = req.file.path.indexOf('uploads');
+        const relativePath = req.file.path.substring(uploadDirIndex);
+
+        const image = { path: relativePath };
+        //++++++++++++++++++++
+
+        if(!description || !title){
+            return res.status(400).json({message:'Description and title is required',status:400});
+        }
+
+        //check if about us already exists
+        const isAlreadyExist=await Aboutus.findOne({});
+        if(isAlreadyExist){
+            return res.status(400).json({message:'About us already exists, you can only update it',status:400});
+        }
+
+        const aboutus=new Aboutus({ description: description, title: title, image: image});
+        await aboutus.save();
+        return res.status(200).json({message:'About us added successfully',status:200, aboutus:aboutus});
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({message:'Unable to add about us',status:500});
+    }
+}];
+
+//edit about us by using description, title and image
+exports.editAboutUs=[upload.single('image'),async(req,res)=>{
+    try {
+        if (req.role !== 'Admin') {
+            return res.status(401).json({ message: 'Unauthorized access you are not an admin', status: 401 });
+        }
+        if(!req.file){
+            return res.status(400).json({message:'Image is required, please upload it',status:400});
+        }
+
+        const {description,title}=req.body;
+
+        if(!description || !title){
+            return res.status(400).json({message:'Description and title is required',status:400});
+        }
+
+        //++++++++++++++++++++
+        const uploadDirIndex = req.file.path.indexOf('uploads');
+        const relativePath = req.file.path.substring(uploadDirIndex);
+
+        const image = { path: relativePath };
+        //++++++++++++++++++++
+
+        if(!description || !title){
+            return res.status(400).json({message:'Description and title is required',status:400});
+        }
+
+        //check if about us already exists
+        const aboutus=await Aboutus.findOne({});
+        if(!aboutus){
+            return res.status(400).json({message:'About us not found, you can only add it',status:400});
+        }
+
+        aboutus.description=description;
+        aboutus.title=title;
+        aboutus.image=image;
+        await aboutus.save();
+        return res.status(200).json({message:'About us updated successfully',status:200, aboutus:aboutus});
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({message:'Unable to update about us',status:500});
+    }
+}];
 
 
 

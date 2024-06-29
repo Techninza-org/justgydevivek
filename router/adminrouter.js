@@ -3,7 +3,7 @@ const router = require('express').Router();
 const {createUser,createVendor,deleteVendorById,fetchAllServices,fetchAllUsers, fetchAllVendors, fetchAllBookedServices
     ,fetchAllAddresses,fetchAllKycs,fetchKycByVendorId,deleteUserById,fetchVendorById, addCatergory,
     approveKycByVendorId,rejectKycByVendorId,editUserById,editVendorById, fetchAllServicesByVendorEmail,
-     fetchServiceById, fetchUserById, createFAQ, getAllUsers, getAllVendors} = require('../contoller/admincontroller');
+     fetchServiceById, fetchUserById, createFAQ, getAllUsers, getAllVendors, createAboutUs, editAboutUs} = require('../contoller/admincontroller');
 
 //create
 router.post('/createUser',createUser);
@@ -42,5 +42,9 @@ router.patch('/rejectKycByVendorId/:id',rejectKycByVendorId);
 //edit by Id
 router.patch('/editUserById/:id',editUserById);
 router.patch('/editVendorById/:id',editVendorById);
+
+//About Us
+router.post('/createAboutUs',createAboutUs);
+router.patch('/editAboutUs',editAboutUs);
 
 module.exports=router;

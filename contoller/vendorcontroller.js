@@ -5,6 +5,7 @@ const Service=require('../model/service');
 const Rating=require('../model/rating');
 const kyc=require('../model/kyc');
 const Bookedservice=require('../model/bookedservice');
+const Aboutus=require('../model/aboutus');
 const crypto = require('node:crypto');
 const bcrypt = require('bcrypt');
 const path = require('path');
@@ -469,8 +470,15 @@ exports.uploadprofilephoto=[upload.single('image'), async(req,res)=>{
         const currentMobile=req.mobile;
         // const vendor=await Vendor.findOne({email:vendoremail});
         const vendor=await Vendor.findOne({mobile:currentMobile});
+
+        //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        // Extract the relative path from 'uploads' directory
+        const uploadDirIndex = req.file.path.indexOf('uploads');//new code
+        const relativePath = req.file.path.substring(uploadDirIndex);// new code
         
-        const image = { path: req.file.path };
+        // const image = { path: req.file.path }; //original code
+        const image = { path: relativePath};//new code
+        //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
         if (!image) {
             return res.status(400).send({message: "Image is required", status: 400});
@@ -842,6 +850,16 @@ exports.getliveservices=async(req,res)=>{
     }
 };
 
+//get about us
+exports.aboutus=async(req,res)=>{
+    try {
+        const aboutus=await Aboutus.findOne({});
+        return res.status(200).send({aboutus, status: 200});
+    } catch (error) {
+        console.log(error);
+        return res.status(500).send({message: "Error occured in try block please check console to see error", status: 500});
+    }
+};
 
 
 

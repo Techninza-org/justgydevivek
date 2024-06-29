@@ -6,7 +6,7 @@ const {getAll, addtocart, bookAllServicesInCart, detelteServiceFromCart, getCart
 addServiceToWishlist, deleteServiceFromWishlist, getAllServicesInWishlist,moveServiceFromWishlistToCart,
  getAllRatingsGivenByUser, getAllCategoriesWithIcon,getServiceByServiceId,addCoinsToUser,updateUser,
   getAllAddress,getAllRatingByServiceIdAndVendorId, getBookedServiceWithHighestQuantity,
-  getBookedServiceWithHighestQuantityInLastWeek, getAllFaqs, getTop5MostBookedServicesInLastWeek} = require('../contoller/usercontroller');
+  getBookedServiceWithHighestQuantityInLastWeek, getAllFaqs, getTop5MostBookedServicesInLastWeek, getAboutUs} = require('../contoller/usercontroller');
 
 const {generateuserotp,resenduserotp,verifyuserotp} = require('../contoller/testotp');
 
@@ -57,6 +57,8 @@ router.get('/trendingBookedServiceInLastWeek',getBookedServiceWithHighestQuantit
 router.get('/getAllFaqs',getAllFaqs);
 
 router.get('/getTopTrendingServices',getTop5MostBookedServicesInLastWeek);
+
+router.get('/getAboutUs',getAboutUs);
 
 
 module.exports=router;

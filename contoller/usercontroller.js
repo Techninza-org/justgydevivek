@@ -6,6 +6,7 @@ const Rating=require('../model/rating');
 const Wishlist=require('../model/wishlist');
 const Cart=require('../model/cart');
 const Bookedservice=require('../model/bookedservice');
+const Aboutus=require('../model/aboutus');
 const bcrypt = require('bcrypt');
 const Catergory=require('../model/catergory');
 const jwt = require('jsonwebtoken');
@@ -355,6 +356,9 @@ exports.getall=async(req,res)=>{
 //upload user image
 exports.uploadimage=[upload.single('image'),async(req,res)=>{
     try {
+        if(!req.role==="User"){
+            return res.status(403).send({message:"You are not a User", status: 403});
+        }
         if(!req.file){
             return res.status(400).send({message:"Image not uploaded from client side", status: 400});
         }
@@ -363,7 +367,15 @@ exports.uploadimage=[upload.single('image'),async(req,res)=>{
         // const userbyuseremail=await User.findOne({email:currentuseremail});
         const userbyuseremail=await User.findOne({mobile:currentMobile});
         
-        const image = { path: req.file.path };
+        // const image = { path: req.file.path };//orignial code for photo path
+
+        // Extract the relative path from 'uploads' directory
+        const uploadDirIndex = req.file.path.indexOf('uploads');
+        const relativePath = req.file.path.substring(uploadDirIndex);
+
+        const image = { path: relativePath };
+
+
         if (!image) {
             return res.status(400).send({ message: "Image not uploaded", status: 400});
         }
@@ -1092,6 +1104,18 @@ exports.getServicesByNameAndCatergoryWithin50kmRange=async(req,res)=>{
         return res.status(500).send({message:"Internal server error", status: 500});
     }
 };
+
+//get about us
+exports.getAboutUs=async(req,res)=>{
+    try {
+        const aboutUs=await Aboutus.find({});
+        return res.status(200).send({aboutUs, status: 200});
+    }
+    catch (error) {
+        console.log(error);
+        return res.status(500).send({message:"Internal server error", status: 500});
+    }
+}
 
 
 
