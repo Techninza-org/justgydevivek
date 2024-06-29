@@ -251,6 +251,7 @@ exports.addaddress=async(req,res)=>{
         const userid=userbyuseremail._id;
         const address=req.body;
         const {latitute, longitude}=req.body;
+        const {addressType}=req.body;
         const newaddress=new Address({userid:userid, houseno:address.houseno, lineone:address.lineone, linetwo:address.linetwo, linethree:address.linethree, landmark:address.landmark, pincode:address.pincode, area_street:address.area_street, city: address.city, country: address.country, name: address.name, mobile: address.mobile, sector_area: address.sector_area, state: address.state});
         
         if (latitute) {
@@ -258,6 +259,9 @@ exports.addaddress=async(req,res)=>{
         }
         if (longitude) {
             newaddress.longitude=longitude;
+        }
+        if (addressType) {
+            newaddress.addressType=addressType;
         }
 
         await newaddress.save();
@@ -953,6 +957,41 @@ exports.getAllFaqs=async(req,res)=>{
         return res.status(500).send({message:"Internal server error", status: 500});
     }
 };
+
+//show services that can be used by user according to user's location and service's loacation under service's range
+exports.getServicesAccordingToUserLocation=async(req,res)=>{
+    try {
+        const currentMobile=req.mobile;
+        const user=await User.findOne({mobile:currentMobile});
+        const userAddress=await Address.find({userid:user._id});
+        if (!userAddress) {
+            return res.status(404).send({message:"User address not found", status: 404});
+        }
+        const userLocation=userAddress[0];
+        const allServices=await Service.find({});
+        const services=[];
+        for (let i = 0; i < allServices.length; i++) {
+            const service=allServices[i];
+            const vendor=await Vendor.findOne({mobile:service.vendoreMobile});
+            const vendorAddress=await Address.find({userid:vendor._id});
+            if (!vendorAddress) {
+                return res.status(404).send({message:"Vendor address not found", status: 404});
+            }
+            const vendorLocation=vendorAddress[0];
+            const distance=geolib.getDistance({latitude: userLocation.latitude, longitude: userLocation.longitude}, {latitude: vendorLocation.latitude, longitude: vendorLocation.longitude});
+            if (distance<=service.range) {
+                services.push(service);
+            }
+        }
+        return res.status(200).send({services, status: 200});
+    }
+    catch (error) {
+        console.log(error);
+        return res.status(500).send({message:"Internal server error", status: 500});
+    }
+};
+
+
 
 
 

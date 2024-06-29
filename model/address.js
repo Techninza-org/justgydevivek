@@ -1,3 +1,4 @@
+const e = require('express');
 const mongoose=require('mongoose');
 
 const addresschema=new mongoose.Schema({
@@ -51,6 +52,10 @@ const addresschema=new mongoose.Schema({
     },
     latitude:{
         type: Number
+    },
+    addressType:{
+        type: String,
+        enum: ['Home','Work','Other']
     }
 });
 

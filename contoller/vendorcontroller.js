@@ -438,13 +438,15 @@ exports.liveOrders=async(req,res)=>{
 
         let listofallordersbyvendorid=[];
 
-        list.forEach( async(order)=>{
+        // list.forEach( async(order)=>{
+        await Promise.all(list.map( async(order)=>{
             //find name of service by serviceid
             const serviceid=order.serviceid;
             const service=await Service.findOne({_id:serviceid});
             const servicename=service.servicename;
             listofallordersbyvendorid.push({bookedservice:order,servicename, paymentStatus: "comes from payment gateway"});
-        });
+        }));
+        // console.log(listofallordersbyvendorid);
 
 
         return res.status(200).send({listofallordersbyvendorid, status: 200});
@@ -648,12 +650,20 @@ exports.addaddress=async(req,res)=>{
         const {houseno, lineone, linetwo, linethree, landmark, pincode, longitude, latitude, city, name, state, country, area_street, sector_area, mobile}=req.body;
         // const currentemail=req.email;
         const currentMobile=req.mobile;
+
+        const {addressType}=req.body;
+
         // const vendor=await Vendor.findOne({email:currentemail});
         const vendor=await Vendor.findOne({mobile:currentMobile});
         if (!vendor) {
             return res.status(400).send({message:"vendor not found", status: 400});
         }
         const address=new Address({houseno, lineone, linetwo, linethree, landmark, pincode, longitude, latitude, vendorid:vendor._id, city:city, name:name, state:state, country:country, area_street:area_street, sector_area:sector_area, mobile:mobile});
+        
+        if(addressType){
+            address.addressType=addressType;
+        }
+
         await address.save();
         return res.status(200).send({message:"address added successfully", address,status: 200});
     } catch (error) {
