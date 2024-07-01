@@ -6,7 +6,7 @@ const {getAll, addtocart, bookAllServicesInCart, detelteServiceFromCart, getCart
 addServiceToWishlist, deleteServiceFromWishlist, getAllServicesInWishlist,moveServiceFromWishlistToCart,
  getAllRatingsGivenByUser, getAllCategoriesWithIcon,getServiceByServiceId,addCoinsToUser,updateUser,
   getAllAddress,getAllRatingByServiceIdAndVendorId, getBookedServiceWithHighestQuantity,
-  getBookedServiceWithHighestQuantityInLastWeek, getAllFaqs, getTop5MostBookedServicesInLastWeek, getAboutUs} = require('../contoller/usercontroller');
+  getBookedServiceWithHighestQuantityInLastWeek, getAllFaqs, getTop5MostBookedServicesInLastWeek, getAboutUs, getSos, deleteUserAddress} = require('../contoller/usercontroller');
 
 const {generateuserotp,resenduserotp,verifyuserotp} = require('../contoller/testotp');
 
@@ -14,7 +14,6 @@ const {generateuserotp,resenduserotp,verifyuserotp} = require('../contoller/test
 router.get('/getalldetails',getAll);
 router.patch('/updatePassword',updateuser);
 router.patch('/update',updateUser);
-router.delete('/delete',deleteuser);
 router.post('/getallservices',getallservices);  //by catergory
 router.post('/bookservice',bookservice);
 router.get('/myorder',myorders);// get all booked services
@@ -32,7 +31,6 @@ router.get('/resendotp',resenduserotp);
 
 router.post('/addtocart',addtocart);
 router.post('/bookAllServicesInCart',bookAllServicesInCart);
-router.delete('/detelteServiceFromCart',detelteServiceFromCart);
 router.get('/getCartServicesFromCurrentUser',getCartServicesFromCurrentUser);
 router.patch('/updateQuantityOfServiceInCart',updateQuantityOfServiceInCart);
 
@@ -40,17 +38,16 @@ router.patch('/updateMobileAndEmail',updateMobileAndEmail);
 router.patch('/cancelBookedService',cancelBookedService);
 
 router.post('/addServiceToWishlist',addServiceToWishlist);
-router.delete('/deleteServiceFromWishlist',deleteServiceFromWishlist);
 router.get('/getAllServicesInWishlist',getAllServicesInWishlist);
 router.post('/moveToCart',moveServiceFromWishlistToCart);
 
 router.get('/getAllRatingsGivenByUser',getAllRatingsGivenByUser);
 router.get('/getAllCategoriesWithNoOfServices',getAllCategoriesWithIcon);
-router.post('/getServiceByServiceId',getServiceByServiceId);
 
+router.post('/getServiceByServiceId',getServiceByServiceId);
 router.post('/addCoinsToUser',addCoinsToUser);
-router.get('/getAllAddress',getAllAddress);
 router.post('/getAllRatingByServiceIdAndVendorId',getAllRatingByServiceIdAndVendorId);
+router.get('/getAllAddress',getAllAddress);
 router.get('/trendingBookedService',getBookedServiceWithHighestQuantity);
 router.get('/trendingBookedServiceInLastWeek',getBookedServiceWithHighestQuantityInLastWeek);
 
@@ -59,6 +56,12 @@ router.get('/getAllFaqs',getAllFaqs);
 router.get('/getTopTrendingServices',getTop5MostBookedServicesInLastWeek);
 
 router.get('/getAboutUs',getAboutUs);
+router.get('/getSos',getSos);
 
+//delete
+router.delete('/deleteUserAddress',deleteUserAddress);
+router.delete('/deleteServiceFromWishlist',deleteServiceFromWishlist);
+router.delete('/detelteServiceFromCart',detelteServiceFromCart);
+router.delete('/delete',deleteuser);
 
 module.exports=router;

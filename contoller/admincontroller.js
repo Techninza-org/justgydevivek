@@ -9,6 +9,7 @@ const Catergory=require('../model/catergory');
 const Aboutus=require('../model/aboutus');
 const Sos=require('../model/sos');
 const Faq=require('../model/faq');
+const Coupon=require('../model/coupon');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
@@ -18,6 +19,7 @@ const SALT_ROUNDS = 10;
 
 const path = require('path');
 const multer = require('multer');
+const { getServiceByServiceId } = require('./usercontroller');
 
 // Configure multer to store files on disk
 const storage = multer.diskStorage({
@@ -913,10 +915,46 @@ exports.fetchAllBookedServicesByUserId=async(req,res)=>{
         }
 
         const bookedServices=await BookedService.find({userid:id});
-        return res.status(200).json({bookedServices:bookedServices,status:200});
+
+        let servicesDetailsWithBookedService=[];
+        for(let i=0;i<bookedServices.length;i++){
+            const serviceBySercieId=await Service.findById(bookedServices[i].serviceid);
+            servicesDetailsWithBookedService.push({service:serviceBySercieId, bookedService:bookedServices[i]});
+        }
+
+        return res.status(200).json({bookedServices:servicesDetailsWithBookedService,status:200});
     } catch (error) {
         console.log(error);
         return res.status(500).json({message:'Unable to fetch booked services, may be user-Id is invalid',status:500});
+    }
+};
+
+//generate Coupon
+exports.gernerateCoupon=async(req,res)=>{
+    try {
+        if (req.role !== 'Admin'){
+            return res.status(401).json({message:'Unauthorized access, You are not an Admin',status:401});
+        }
+        const {couponCode, discountPercentage, expiryDate}=req.body;
+        if(!couponCode || !discountPercentage || !expiryDate){
+            return res.status(400).json({message:'couponCode, discountPercentage and expiryDate is required',status:400});
+        }
+
+        const coupon=new Coupon({couponCode:couponCode, discountPercentage:discountPercentage, expiryDate:expiryDate});
+        
+    } catch (error) {
+        
+    }
+};
+
+//get Sos number
+exports.getSos=async(req,res)=>{
+    try {
+        const sos=await Sos.findOne();
+        return res.status(200).json({sos:sos,status:200});
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({message:'Unable to fetch SoS',status:500});
     }
 };
 

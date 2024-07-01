@@ -1147,6 +1147,33 @@ exports.getSos=async(req,res)=>{
     }
 }
 
+//delete user address by address id
+exports.deleteUserAddress=async(req,res)=>{
+    try {
+        if(req.role!=="User"){
+            return res.status(403).send({message:"your are not a User", status: 403});
+        }
+
+        const {addressid}=req.body;
+        if (!addressid) {
+            return res.status(400).send({message:"addressid is required", status: 400});
+        }
+
+        const user=await User.findOne({mobile:req.mobile});
+
+        const address= await Address.findOne({_id:addressid, userid: user._id})
+        if (!address) {
+            return res.status(404).send({message:"Address not found, or current user id is not belong to provided address id", status: 404});
+        }
+        await Address.findByIdAndDelete(addressid);
+        return res.status(200).send({message:"Address deleted successfully", address, status: 200});
+    }
+    catch (error) {
+        console.log(error);
+        return res.status(500).send({message:"Internal server error", status: 500});
+    }
+}
+
 
 
 

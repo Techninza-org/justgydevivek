@@ -186,7 +186,7 @@ exports.getAll=async (req,res)=>{
 
         //get current kyc status of vendor
         const kycdetails=await kyc.findOne({vendorid:vendorid});
-        const kycStatus="kyc not submitted by vendor";
+        let kycStatus="kyc not submitted by vendor";
         if(kycdetails){
             kycStatus=kycdetails.status;
         }

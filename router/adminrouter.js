@@ -4,7 +4,8 @@ const {createUser,createVendor,deleteVendorById,fetchAllServices,fetchAllUsers, 
     ,fetchAllAddresses,fetchAllKycs,fetchKycByVendorId,deleteUserById,fetchVendorById, addCatergory,
     approveKycByVendorId,rejectKycByVendorId,editUserById,editVendorById, fetchAllServicesByVendorEmail,
      fetchServiceById, fetchUserById, createFAQ, getAllUsers, getAllVendors, createAboutUs,
-      editAboutUs, editFAQ, deleteFAQ, deleteCatergory, createSoS, editSos, editCatergory, fetchAllBookedServicesByUserId} = require('../contoller/admincontroller');
+      editAboutUs, editFAQ, deleteFAQ, deleteCatergory, createSoS, editSos, editCatergory, fetchAllBookedServicesByUserId,
+    getSos} = require('../contoller/admincontroller');
 
 //create
 router.post('/createUser',createUser);
@@ -30,6 +31,7 @@ router.get('/fetchAllBookedServicesByUserId/:id',fetchAllBookedServicesByUserId)
 
 router.get('/getAllUsers',getAllUsers); //new first
 router.get('/getAllVendors',getAllVendors); //new first
+router.get('/getSos',getSos);
 
 //fetch by Id
 router.get('/fetchKycByVendorId/:id',fetchKycByVendorId);
