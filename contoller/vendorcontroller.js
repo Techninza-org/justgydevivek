@@ -661,6 +661,15 @@ exports.addaddress=async(req,res)=>{
 
         const {addressType}=req.body;
 
+        if(!addressType){
+            return res.status(400).send({message:"addressType is required", status: 400});
+        }
+
+        const validAddressTypes = ["Home", "Work", "Other"];
+        if (addressType && !validAddressTypes.includes(addressType)) {
+            return res.status(400).send({ message: "addressType should be Home, Work or Other", status: 400 });
+        }
+
         // const vendor=await Vendor.findOne({email:currentemail});
         const vendor=await Vendor.findOne({mobile:currentMobile});
         if (!vendor) {
@@ -873,6 +882,34 @@ exports.sos=async(req,res)=>{
             return res.status(404).send({message:"sos is not created by admin", status: 404});
         }
         return res.status(200).send({sos, status: 200});
+    } catch (error) {
+        console.log(error);
+        return res.status(500).send({message: "Error occured in try block please check console to see error", status: 500});
+    }
+};
+
+//delete address by address id
+exports.deleteaddress=async(req,res)=>{
+    try {
+        if(req.role!=='Vendor'){
+            return res.status(400).send({message:"you are not a vendor", status: 400});
+        }
+
+        const {addressid}=req.body;
+        if(!addressid){
+            return res.status(400).send({message:"addressid is required", status: 400});
+        }
+        const currentMobile=req.mobile;
+        const vendor=await Vendor.findOne({mobile:currentMobile});
+        if (!vendor) {
+            return res.status(400).send({message:"vendor not found", status: 400});
+        }
+        const address=await Address.findOne({_id:addressid, vendorid:vendor._id});
+        if (!address) {
+            return res.status(400).send({message:"address not found or current address id not belongs to current vendor's id", status: 400});
+        }
+        await Address.deleteOne({_id:addressid});
+        return res.status(200).send({message:"address deleted successfully", status: 200});
     } catch (error) {
         console.log(error);
         return res.status(500).send({message: "Error occured in try block please check console to see error", status: 500});

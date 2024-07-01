@@ -254,6 +254,16 @@ exports.addaddress=async(req,res)=>{
         const address=req.body;
         const {latitute, longitude}=req.body;
         const {addressType}=req.body;
+
+        if(!addressType){
+            return res.status(400).send({message:"addressType is required", status: 400});
+        }
+        
+        const validAddressTypes = ["Home", "Work", "Other"];
+        if (addressType && !validAddressTypes.includes(addressType)) {
+            return res.status(400).send({ message: "addressType should be Home, Work or Other", status: 400 });
+        }
+
         const newaddress=new Address({userid:userid, houseno:address.houseno, lineone:address.lineone, linetwo:address.linetwo, linethree:address.linethree, landmark:address.landmark, pincode:address.pincode, area_street:address.area_street, city: address.city, country: address.country, name: address.name, mobile: address.mobile, sector_area: address.sector_area, state: address.state});
         
         if (latitute) {

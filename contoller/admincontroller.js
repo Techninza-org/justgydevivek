@@ -8,6 +8,7 @@ const Kyc=require('../model/kyc');
 const Catergory=require('../model/catergory');
 const Aboutus=require('../model/aboutus');
 const Sos=require('../model/sos');
+const Faq=require('../model/faq');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
@@ -423,7 +424,7 @@ exports.editVendorById=async(req,res)=>{
         await vendor.save();
         
         //generate new token
-        const tokenOfVendor = jwt.sign({ email: vendor.email, role: vendor.role }, SECRET_KEY, { expiresIn: "7d" });
+        const tokenOfVendor = jwt.sign({ email: vendor.email, role: vendor.role, mobile: vendor.mobile }, SECRET_KEY, { expiresIn: "7d" });
 
         return res.status(200).json({message:'Vendor updated successfully', tokenOfVendor, status:200});
     } catch (error) {
@@ -471,7 +472,7 @@ exports.editUserById=async(req,res)=>{
         await user.save();
         
         //generate new token
-        const tokenOfUser = jwt.sign({ email: user.email, role: user.role }, SECRET_KEY, { expiresIn: "7d" });
+        const tokenOfUser = jwt.sign({ email: user.email, role: user.role, mobile: user.mobile }, SECRET_KEY, { expiresIn: "7d" });
 
         return res.status(200).json({message:'User updated successfully', tokenOfUser, status:200});
     } catch (error) {
@@ -576,15 +577,21 @@ exports.rejectKycByVendorId=async(req,res)=>{
     }
 };
 
-//create FAQ
+//create Faq
 exports.createFAQ=async(req,res)=>{
     try {
-        if (req.role !== 'Admin') {
-            return res.status(401).json({ message: 'Unauthorized access you are not an admin', status: 401 });
+        if(req.role!=='Admin'){
+            return res.status(401).json({message:'Unauthorized access you are not an admin',status:401});
         }
+
         const {question,answer}=req.body;
-        const faq={question:question,answer:answer};
-        return res.status(200).json({message:'FAQ added successfully',status:200,faq:faq});
+        if(!question || !answer){
+            return res.status(400).json({message:'Question and answer is required',status:400});
+        }
+
+        const faq=new Faq({question:question,answer:answer});
+        await faq.save();
+        return res.status(200).json({message:'FAQ added successfully',status:200, faq:faq});
     } catch (error) {
         console.log(error);
         return res.status(500).json({message:'Unable to add FAQ',status:500});
@@ -761,6 +768,157 @@ exports.editSos=async(req,res)=>{
         return res.status(500).json({message:'Unable to update SoS',status:500});
     }
 }
+
+//delete FAQ by id
+exports.deleteFAQ=async(req,res)=>{
+    try {
+        if (req.role !== 'Admin') {
+            return res.status(401).json({ message: 'Unauthorized access you are not an admin', status: 401 });
+        }
+
+        const {id}=req.params;
+        if(!id){
+            return res.status(400).json({message:'FAQ id is required, please pass it in url path',status:400});
+        }
+
+        const isDel=await Faq.findByIdAndDelete(id);
+        if(!isDel){
+            return res.status(400).json({message:'FAQ not found, may be FAQ id is invalid',status:400});
+        }
+
+        return res.status(200).json({message:'FAQ deleted successfully',status:200});
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({message:'Unable to delete FAQ, may be FAQ-Id is invalid',status:500});
+    }
+};
+
+//edit FAQ by id
+exports.editFAQ=async(req,res)=>{
+    try {
+        if (req.role !== 'Admin') {
+            return res.status(401).json({ message: 'Unauthorized access you are not an admin', status: 401 });
+        }
+
+        const {id}=req.params;
+        if(!id){
+            return res.status(400).json({message:'FAQ id is required, please pass it in url path',status:400});
+        }
+
+        const faq=await Faq.findById(id);
+        if(!faq){
+            return res.status(400).json({message:'FAQ not found, may be FAQ id is invalid',status:400});
+        }
+
+        const {question,answer}=req.body;
+        if(question){
+            faq.question=question;
+        }
+        if(answer){
+            faq.answer=answer;
+        }
+
+        await faq.save();
+        return res.status(200).json({message:'FAQ updated successfully',status:200});
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({message:'Unable to update FAQ, may be FAQ-Id is invalid',status:500});
+    }
+};
+
+//delete catergory by id
+exports.deleteCatergory=async(req,res)=>{
+    try {
+        if (req.role !== 'Admin') {
+            return res.status(401).json({ message: 'Unauthorized access you are not an admin', status: 401 });
+        }
+
+        const {id}=req.params;
+        if(!id){
+            return res.status(400).json({message:'Catergory id is required, please pass it in url path',status:400});
+        }
+
+        const isDel=await Catergory.findByIdAndDelete(id);
+        if(!isDel){
+            return res.status(400).json({message:'Catergory not found, may be Catergory id is invalid',status:400});
+        }
+
+        return res.status(200).json({message:'Catergory deleted successfully',status:200});
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({message:'Unable to delete Catergory, may be Catergory-Id is invalid',status:500});
+    }
+};
+
+//edit catergory by id
+exports.editCatergory=[upload.single('icon'),async(req,res)=>{
+    try {
+        if (req.role !== 'Admin') {
+            return res.status(401).json({ message: 'Unauthorized access you are not an admin', status: 401 });
+        }
+        if(!req.file){
+            return res.status(400).json({message:'Icon is required, please upload it',status:400});
+        }
+
+        const {id}=req.params;
+        if(!id){
+            return res.status(400).json({message:'Catergory id is required, please pass it in url path',status:400});
+        }
+
+        const catergory=await Catergory.findById(id);
+        if(!catergory){
+            return res.status(400).json({message:'Catergory not found, may be Catergory id is invalid',status:400});
+        }
+
+        const {catergorytype,startcolor,endcolor}=req.body;
+
+        //++++++++++++++++++++
+        const uploadDirIndex = req.file.path.indexOf('uploads');
+        const relativePath = req.file.path.substring(uploadDirIndex);
+
+        const icon = { path: relativePath };
+        //++++++++++++++++++++
+
+        if(catergorytype){
+            catergory.catergorytype=catergorytype;
+        }
+        if(startcolor){
+            catergory.startcolor=startcolor;
+        }
+        if(endcolor){
+            catergory.endcolor=endcolor;
+        }
+        if(req.file){
+            catergory.catergoryicon=icon;
+        }
+
+        await catergory.save();
+        return res.status(200).json({message:'Catergory updated successfully',status:200});
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({message:'Unable to update Catergory, may be Catergory-Id is invalid',status:500});
+    }
+}];
+
+//get all booked services by user id
+exports.fetchAllBookedServicesByUserId=async(req,res)=>{
+    try {
+        if (req.role !== 'Admin') {
+            return res.status(401).json({ message: 'Unauthorized access you are not an admin', status: 401 });
+        }
+
+        const {id}=req.params;
+        if(!id){
+            return res.status(400).json({message:'User id is required, please pass it in url path',status:400});
+        }
+
+        const bookedServices=await BookedService.find({userid:id});
+        return res.status(200).json({bookedServices:bookedServices,status:200});
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({message:'Unable to fetch booked services, may be user-Id is invalid',status:500});
+    }
+};
 
 
 

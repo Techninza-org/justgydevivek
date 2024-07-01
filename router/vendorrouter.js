@@ -5,7 +5,7 @@ const multer = require('multer');
 const {kyc,completed, liveOrders,addservicebyvendor,allservices, uploadprofilephoto,
      updatevendor,getAll, deletevendor, acceptorder, rejectorder, orderrequests, totalorders,
       getallratings, updatemobileemail,updatediscount,getkycStatus, addaddress,getaddress,
-       makeinactive,updateaddress,getcatergory, makeactive, getliveservices, aboutus} = require('../contoller/vendorcontroller');
+       makeinactive,updateaddress,getcatergory, makeactive, getliveservices, aboutus, deleteaddress} = require('../contoller/vendorcontroller');
 const {generateotp, resendotp, verifyotp}=require('../contoller/testotp');
 
 router.post('/addservice', addservicebyvendor);
@@ -44,5 +44,6 @@ router.get('/getliveservices',getliveservices);
 
 
 router.get('/getAboutUs',aboutus);
+router.delete('/deleteaddress',deleteaddress);
 
 module.exports=router;
